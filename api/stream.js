@@ -1,8 +1,10 @@
 /**
  * SONIQ — Streaming API endpoint (SSE)
- * POST /api/stream → streams Anthropic response as Server-Sent Events
- * Each event: data: {"text":"..."}\n\n
- * Final event: data: {"done":true}\n\n
+ * Tries ANTHROPIC_API_KEY first, falls back to OPENROUTER_API_KEY
+ * POST /api/stream → streams response as Server-Sent Events
+ * Each text event: data: {"text":"..."}\n\n
+ * Final event:     data: {"done":true}\n\n
+ * Error event:     data: {"error":"..."}\n\n
  */
 
 const anonUsage = new Map();
@@ -14,6 +16,79 @@ function checkLimit(ip) {
   e.count++; return true;
 }
 
+async function streamAnthropic(apiKey, messages, system, max_tokens, res) {
+  const payload = {model: 'claude-sonnet-4-20250514', max_tokens, stream: true, messages};
+  if (system) payload.system = system;
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01'},
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error('Anthropic ' + r.status + ': ' + t.slice(0, 200));
+  }
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const {done, value} = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, {stream: true});
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (raw === '[DONE]') continue;
+      try {
+        const ev = JSON.parse(raw);
+        if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+          res.write(`data: ${JSON.stringify({text: ev.delta.text})}\n\n`);
+        }
+      } catch {}
+    }
+  }
+}
+
+async function streamOpenRouter(apiKey, messages, system, max_tokens, res) {
+  const orMsgs = system ? [{role: 'system', content: system}, ...messages] : messages;
+  const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey,
+      'HTTP-Referer': 'https://soniq.vercel.app',
+      'X-Title': 'SONIQ'
+    },
+    body: JSON.stringify({model: 'anthropic/claude-sonnet-4-5', max_tokens, stream: true, messages: orMsgs})
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error('OpenRouter ' + r.status + ': ' + t.slice(0, 200));
+  }
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const {done, value} = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, {stream: true});
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const raw = line.slice(6).trim();
+      if (raw === '[DONE]') continue;
+      try {
+        const ev = JSON.parse(raw);
+        const text = ev.choices?.[0]?.delta?.content;
+        if (text) res.write(`data: ${JSON.stringify({text})}\n\n`);
+      } catch {}
+    }
+  }
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -22,14 +97,16 @@ module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) {
-    return res.status(500).json({error: 'ANTHROPIC_API_KEY not set in Vercel Environment Variables'});
+  const openrouterKey = process.env.OPENROUTER_API_KEY;
+
+  if (!anthropicKey && !openrouterKey) {
+    return res.status(500).json({
+      error: 'No API key configured. Add ANTHROPIC_API_KEY or OPENROUTER_API_KEY in Vercel → Settings → Environment Variables, then Redeploy.'
+    });
   }
 
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-  if (!checkLimit(ip)) {
-    return res.status(429).json({error: 'Hourly limit reached. Try again soon.'});
-  }
+  if (!checkLimit(ip)) return res.status(429).json({error: 'Hourly limit reached. Try again soon.'});
 
   let body;
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
@@ -44,65 +121,30 @@ module.exports = async function handler(req, res) {
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
 
-  const payload = {
-    model: 'claude-sonnet-4-20250514',
-    max_tokens,
-    stream: true,
-    messages
-  };
-  if (system) payload.system = system;
+  const errors = [];
 
-  let upstreamRes;
-  try {
-    upstreamRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': anthropicKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(payload)
-    });
-  } catch (err) {
-    res.write(`data: ${JSON.stringify({error: 'Network error: ' + err.message})}\n\n`);
-    return res.end();
-  }
-
-  if (!upstreamRes.ok) {
-    const t = await upstreamRes.text();
-    res.write(`data: ${JSON.stringify({error: 'Anthropic error ' + upstreamRes.status + ': ' + t.slice(0, 200)})}\n\n`);
-    return res.end();
-  }
-
-  const reader = upstreamRes.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  try {
-    while (true) {
-      const {done, value} = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, {stream: true});
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const raw = line.slice(6).trim();
-        if (raw === '[DONE]') continue;
-        try {
-          const event = JSON.parse(raw);
-          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-            res.write(`data: ${JSON.stringify({text: event.delta.text})}\n\n`);
-          } else if (event.type === 'message_stop') {
-            res.write(`data: ${JSON.stringify({done: true})}\n\n`);
-          }
-        } catch {}
-      }
+  if (anthropicKey) {
+    try {
+      await streamAnthropic(anthropicKey, messages, system, max_tokens, res);
+      res.write(`data: ${JSON.stringify({done: true})}\n\n`);
+      return res.end();
+    } catch (err) {
+      console.error('Anthropic stream failed, trying OpenRouter:', err.message);
+      errors.push('Anthropic: ' + err.message);
     }
-  } catch (err) {
-    res.write(`data: ${JSON.stringify({error: 'Stream error: ' + err.message})}\n\n`);
   }
 
+  if (openrouterKey) {
+    try {
+      await streamOpenRouter(openrouterKey, messages, system, max_tokens, res);
+      res.write(`data: ${JSON.stringify({done: true})}\n\n`);
+      return res.end();
+    } catch (err) {
+      console.error('OpenRouter stream failed:', err.message);
+      errors.push('OpenRouter: ' + err.message);
+    }
+  }
+
+  res.write(`data: ${JSON.stringify({error: 'All providers failed. ' + errors.join(' | ')})}\n\n`);
   res.end();
 };
