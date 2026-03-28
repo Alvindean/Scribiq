@@ -1,10 +1,7 @@
 /**
- * SONIQ — Streaming API endpoint (SSE)
+ * Scribiq — Streaming API endpoint (SSE)
  * Tries ANTHROPIC_API_KEY first, falls back to OPENROUTER_API_KEY
- * POST /api/stream → streams response as Server-Sent Events
- * Each text event: data: {"text":"..."}\n\n
- * Final event:     data: {"done":true}\n\n
- * Error event:     data: {"error":"..."}\n\n
+ * POST /api/stream
  */
 
 const anonUsage = new Map();
@@ -12,7 +9,7 @@ function checkLimit(ip) {
   const now = Date.now();
   const e = anonUsage.get(ip);
   if (!e || now - e.reset > 3600000) { anonUsage.set(ip, {count: 1, reset: now}); return true; }
-  if (e.count >= 10) return false;
+  if (e.count >= 20) return false;
   e.count++; return true;
 }
 
@@ -37,8 +34,8 @@ async function orFetch(apiKey, orMsgs, max_tokens) {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + apiKey,
-      'HTTP-Referer': 'https://soniq.vercel.app',
-      'X-Title': 'SONIQ'
+      'HTTP-Referer': 'https://scribiq.vercel.app',
+      'X-Title': 'Scribiq'
     },
     body: JSON.stringify({model: 'anthropic/claude-sonnet-4-5', max_tokens, stream: true, messages: orMsgs})
   });
@@ -47,8 +44,6 @@ async function orFetch(apiKey, orMsgs, max_tokens) {
 async function streamOpenRouter(apiKey, messages, system, max_tokens, res) {
   const orMsgs = system ? [{role: 'system', content: system}, ...messages] : messages;
   let r = await orFetch(apiKey, orMsgs, max_tokens);
-
-  // On 402, extract affordable token count and retry once
   if (r.status === 402) {
     const t = await r.text();
     const match = t.match(/can only afford (\d+)/);
@@ -59,7 +54,6 @@ async function streamOpenRouter(apiKey, messages, system, max_tokens, res) {
       throw new Error('CREDITS_LOW');
     }
   }
-
   if (!r.ok) {
     const t = await r.text();
     throw new Error('OpenRouter ' + r.status + ': ' + t.slice(0, 200));
@@ -113,10 +107,9 @@ module.exports = async function handler(req, res) {
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
   catch { return res.status(400).end(); }
 
-  const {messages, system, max_tokens = 2048} = body || {};
+  const {messages, system, max_tokens = 4096} = body || {};
   if (!messages?.length) return res.status(400).end();
 
-  // SSE headers
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');

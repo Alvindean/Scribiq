@@ -1,7 +1,7 @@
 {
-  "name": "soniq",
+  "name": "scribiq",
   "version": "1.0.0",
-  "description": "SONIQ — AI Song Creation Studio",
+  "description": "Scribiq — AI Writing Studio",
   "private": true,
   "engines": {
     "node": ">=18.x"
