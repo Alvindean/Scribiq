@@ -1,47 +1,65 @@
-# Scribiq — AI Writing Studio
+# SONIQ — AI Song Creation Studio
 
-A single-page AI writing app with 80+ tools across 10 specialized writing tabs. Deployed on Vercel with real-time streaming via Claude (Anthropic or OpenRouter).
-
----
+Full-stack deployment: Vercel (serverless) + Supabase (auth + database).
 
 ## Project Structure
 
 ```
-scribiq/
+soniq-vercel/
 ├── api/
-│   ├── generate.js   ← AI API proxy (non-streaming)
-│   └── stream.js     ← Streaming SSE endpoint
+│   ├── generate.js        ← Anthropic proxy with auth + usage metering
+│   ├── auth.js            ← Signup / login / session endpoints  
+│   └── songs.js           ← Cloud library CRUD
 ├── public/
-│   └── index.html    ← Full app (HTML + CSS + JS)
+│   └── index.html         ← Full SONIQ app
+├── supabase-schema.sql    ← Run once in Supabase SQL editor
 ├── vercel.json
 └── package.json
 ```
 
 ---
 
-## Writing Tabs
+## Deploy in 4 Steps (~20 minutes)
 
-| Tab | Description |
-|---|---|
-| **Write** | General-purpose writing tools — blog posts, articles, outlines, intros, conclusions, and more |
-| **Copy** | Copywriting tools — headlines, taglines, product descriptions, CTAs, ad copy, and sales pages |
-| **Email** | Email writing — cold outreach, follow-ups, newsletters, subject lines, and auto-replies |
-| **Social** | Social media content — posts, captions, thread ideas, bios, and platform-specific copy |
-| **Script** | Video and podcast scripts — YouTube scripts, explainer videos, intros/outros, and voiceovers |
-| **Screen** | Screenwriting tools — scene descriptions, dialogue, loglines, treatments, and character bios |
-| **Book** | Long-form book writing — chapter drafts, blurbs, back-cover copy, query letters, and synopses |
-| **Story** | Creative fiction — short stories, prompts, character development, world-building, and plot outlines |
-| **Edit** | Editing and rewriting — proofreading, tone adjustments, simplification, expansion, and rewrites |
-| **Tools** | Utility tools — summarization, translation, keyword extraction, rephrasing, and content ideas |
+### Step 1 — Supabase setup
 
----
+1. Create free account at supabase.com
+2. New Project → give it a name and password
+3. SQL Editor → New Query → paste supabase-schema.sql → Run
+4. Settings → API → copy these 3 values:
+   - Project URL        → SUPABASE_URL
+   - anon public        → SUPABASE_ANON_KEY  
+   - service_role       → SUPABASE_SERVICE_ROLE_KEY (keep secret!)
 
-## Deploy to Vercel
+### Step 2 — Push to GitHub
 
-1. Push this repo to GitHub.
-2. Go to [vercel.com](https://vercel.com) and import the repository.
-3. Add the required environment variables (see table below).
-4. Click **Deploy**.
+```bash
+git init
+git add .
+git commit -m "SONIQ v1.0"
+git remote add origin https://github.com/YOU/soniq.git
+git push -u origin main
+```
+
+### Step 3 — Deploy to Vercel
+
+1. vercel.com → Add New Project → import your repo
+2. Framework: Other
+3. Click Deploy (fails until env vars are set — that's OK)
+
+### Step 4 — Environment variables
+
+Vercel → your project → Settings → Environment Variables — add all 5:
+
+| Variable                   | Where to find it |
+|----------------------------|-----------------|
+| ANTHROPIC_API_KEY          | console.anthropic.com → API Keys |
+| SUPABASE_URL               | Supabase → Settings → API → Project URL |
+| SUPABASE_ANON_KEY          | Supabase → Settings → API → anon public |
+| SUPABASE_SERVICE_ROLE_KEY  | Supabase → Settings → API → service_role |
+| APP_URL                    | Your Vercel URL e.g. https://soniq.vercel.app |
+
+After saving → Deployments → latest → Redeploy. Done.
 
 ---
 
@@ -49,28 +67,57 @@ scribiq/
 
 ```bash
 npm install
-cp .env.example .env.local   # add your API keys
-npx vercel dev
 ```
 
-The app runs at `http://localhost:3000`.
+Create .env.local (never commit):
+```
+ANTHROPIC_API_KEY=sk-ant-...
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+APP_URL=http://localhost:3000
+```
+
+```bash
+npx vercel dev
+# → open http://localhost:3000
+```
 
 ---
 
-## Environment Variables
+## Usage Limits
 
-| Variable | Required | Description |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | One of the two is required | API key from [console.anthropic.com](https://console.anthropic.com) |
-| `OPENROUTER_API_KEY` | One of the two is required | API key from [openrouter.ai](https://openrouter.ai) |
+| Plan                | Songs/month | Library       |
+|---------------------|-------------|---------------|
+| Not signed in       | 3/hour      | localStorage  |
+| Free (signed in)    | 5/month     | Cloud sync    |
+| Pro ($9/mo)         | Unlimited   | Cloud sync    |
 
-At least one key must be set. If both are present, the app will use whichever is configured as the active provider.
+Manually upgrade a user in Supabase:
+```sql
+UPDATE user_profiles SET plan = 'pro' WHERE email = 'user@example.com';
+```
 
 ---
 
-## API Endpoints
+## How the Security Works
 
-| Endpoint | Description |
-|---|---|
-| `POST /api/generate` | Standard request/response generation |
-| `POST /api/stream` | Server-sent events (SSE) for real-time streaming output |
+```
+Browser → POST /api/generate (Authorization: Bearer <jwt>)
+        → Vercel Function verifies JWT with Supabase
+        → Checks + increments usage counter
+        → Calls Anthropic with your API key (server-side only)
+        → Returns result
+```
+
+Your Anthropic API key never touches the browser. Ever.
+
+---
+
+## Next: Add Stripe
+
+1. Create products in Stripe: Pro $9/mo, Studio $19/mo
+2. Add api/stripe-webhook.js — on checkout.session.completed, update user_profiles.plan = 'pro'
+3. Add Upgrade button → Stripe Checkout link
+
+Stripe quickstart: stripe.com/docs/billing/quickstart
