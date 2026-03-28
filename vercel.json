@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "name": "scribiq",
+  "outputDirectory": "public",
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

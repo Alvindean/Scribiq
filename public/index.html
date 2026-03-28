@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scribiq — AI Writing Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06060d;--s1:#0c0c16;--s2:#11111c;--s3:#161623;--s4:#1c1c2a;--s5:#222232;--s6:#2a2a3e;
+  --b1:rgba(255,255,255,0.04);--b2:rgba(255,255,255,0.08);--b3:rgba(255,255,255,0.14);--b4:rgba(255,255,255,0.22);
+  --tx1:#eeeef5;--tx2:#9090b0;--tx3:#52526e;--tx4:#30303e;
+  --ind:#6366f1;--ind2:#4f52d8;--indbg:rgba(99,102,241,0.09);--indln:rgba(99,102,241,0.28);--indhov:rgba(99,102,241,0.16);
+  --vi:#a78bfa;--vibg:rgba(167,139,250,0.08);--viln:rgba(167,139,250,0.24);
+  --cyan:#00d4b8;--cyanbg:rgba(0,212,184,0.07);--cyanln:rgba(0,212,184,0.2);
+  --amber:#f5b800;--amberbg:rgba(245,184,0,0.07);--amberln:rgba(245,184,0,0.22);
+  --green:#34d399;--greenbg:rgba(52,211,153,0.07);--greenln:rgba(52,211,153,0.2);
+  --red:#f87171;--redbg:rgba(248,113,113,0.07);--redln:rgba(248,113,113,0.22);
+  --pink:#f472b6;--pinkbg:rgba(244,114,182,0.07);--pinkln:rgba(244,114,182,0.22);
+  --r1:5px;--r2:9px;--r3:13px;--r4:18px;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --glow:0 0 0 1px var(--indln),0 4px 20px rgba(99,102,241,0.18);
+}
+html,body{background:var(--bg);color:var(--tx1);font-family:var(--font);font-size:15px;line-height:1.65;min-height:100vh}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--s6);border-radius:2px}
+button,input,select,textarea{font-family:var(--font)}a{color:var(--ind);text-decoration:none}
+
+/* LAYOUT */
+.wrap{max-width:1040px;margin:0 auto;padding:0 24px 100px}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:22px 0 18px;border-bottom:1px solid var(--b1);margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.logo-mark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--ind),var(--vi));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 16px rgba(99,102,241,0.35)}
+.logo-name{font-size:20px;font-weight:700;letter-spacing:0.02em}
+.logo-name span{background:linear-gradient(135deg,var(--ind),var(--vi));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-tag{font-size:11px;color:var(--tx3);margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:8px}
+.hdr-btn{background:var(--s2);border:1px solid var(--b2);color:var(--tx2);border-radius:var(--r2);padding:7px 12px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.hdr-btn:hover{background:var(--s3);color:var(--tx1);border-color:var(--b3)}
+
+/* NAV */
+.nav{display:flex;gap:2px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r3);padding:4px;margin-bottom:24px;overflow-x:auto}
+.nav::-webkit-scrollbar{display:none}
+.nb{flex:1;min-width:72px;padding:10px 8px;border-radius:var(--r2);border:none;background:transparent;color:var(--tx3);font-size:11px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;white-space:nowrap}
+.nb:hover{background:var(--s3);color:var(--tx2)}
+.nb.on{background:var(--s4);color:var(--tx1);box-shadow:0 1px 0 0 var(--b3) inset}
+.nb .ni{font-size:17px;line-height:1}
+.nb.on .ni{filter:drop-shadow(0 0 5px rgba(99,102,241,0.6))}
+
+/* PAGES */
+.pg{display:none}.pg.on{display:block;animation:pgIn .18s ease}
+@keyframes pgIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+/* TOOL PILLS */
+.tools-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;flex-wrap:nowrap}
+.tools-row::-webkit-scrollbar{display:none}
+.tp{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:99px;border:1px solid var(--b2);background:var(--s2);color:var(--tx2);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.tp:hover{border-color:var(--b3);color:var(--tx1);background:var(--s3)}
+.tp.on{border-color:var(--indln);background:var(--indbg);color:var(--ind)}
+.tp .ti{font-size:14px}
+
+/* FORM */
+.form-wrap{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r3);overflow:hidden;margin-bottom:16px}
+.tool-hdr{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--b1)}
+.tool-icon{font-size:22px;line-height:1}
+.tool-name{font-size:15px;font-weight:600;color:var(--tx1)}
+.tool-desc{font-size:12px;color:var(--tx3);margin-top:2px}
+.form-body{padding:20px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.span2{grid-column:span 2}
+@media(max-width:600px){.field.span2{grid-column:span 1}}
+.flbl{font-size:11px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.08em}
+.finp,.fsel,.ftxt{width:100%;background:var(--s3);border:1px solid var(--b2);border-radius:var(--r2);color:var(--tx1);font-size:14px;padding:10px 12px;outline:none;transition:all .15s}
+.finp:focus,.fsel:focus,.ftxt:focus{border-color:var(--indln);box-shadow:var(--glow)}
+.finp::placeholder,.ftxt::placeholder{color:var(--tx4)}
+.fsel{cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%2352526e'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:28px}
+.fsel option{background:var(--s4)}
+.ftxt{resize:vertical;line-height:1.6}
+
+/* GENERATE BUTTON */
+.btn-gen{width:100%;padding:13px 20px;background:var(--ind);border:none;border-radius:var(--r2);color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;letter-spacing:0.02em}
+.btn-gen:hover{background:var(--ind2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(99,102,241,0.35)}
+.btn-gen:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.btn-gen svg{transition:transform .15s}
+.btn-gen:hover svg{transform:translateX(2px)}
+
+/* OUTPUT */
+.out-wrap{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r3);overflow:hidden;display:none}
+.out-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--b1)}
+.out-title{font-size:12px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.06em;display:flex;align-items:center;gap:8px}
+.out-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--indbg);color:var(--ind);border:1px solid var(--indln)}
+.out-acts{display:flex;gap:6px}
+.iBtn{padding:5px 10px;border-radius:var(--r1);border:1px solid var(--b2);background:transparent;color:var(--tx3);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+.iBtn:hover{background:var(--s3);color:var(--tx1);border-color:var(--b3)}
+.out-body{padding:20px;max-height:60vh;overflow-y:auto;line-height:1.8;font-size:14px}
+.out-body.screen{font-family:var(--mono);font-size:13px;white-space:pre-wrap;line-height:1.7}
+.out-body h1{font-size:20px;font-weight:700;margin:0 0 12px;color:var(--tx1)}
+.out-body h2{font-size:16px;font-weight:600;margin:20px 0 8px;color:var(--tx1)}
+.out-body h3{font-size:14px;font-weight:600;margin:16px 0 6px;color:var(--tx2)}
+.out-body p{margin-bottom:12px;color:var(--tx1)}
+.out-body ul,.out-body ol{margin:8px 0 12px 20px;color:var(--tx1)}
+.out-body li{margin-bottom:4px}
+.out-body strong{color:var(--tx1);font-weight:600}
+.out-body em{color:var(--vi)}
+.out-body hr{border:none;border-top:1px solid var(--b2);margin:16px 0}
+.out-foot{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid var(--b1);font-size:11px;color:var(--tx3)}
+.cursor-blink{display:inline-block;width:2px;height:14px;background:var(--ind);border-radius:1px;vertical-align:middle;animation:blink 1s step-end infinite;margin-left:2px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-msg{color:var(--red);background:var(--redbg);border:1px solid var(--redln);border-radius:var(--r2);padding:12px 16px;font-size:13px}
+.empty-out{color:var(--tx3);font-size:13px;text-align:center;padding:40px 20px}
+.empty-out .ei{font-size:32px;margin-bottom:8px}
+
+/* LIBRARY MODAL */
+.lib-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.lib-overlay.on{display:flex}
+.lib-modal{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r4);width:100%;max-width:720px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+.lib-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--b1)}
+.lib-top h2{font-size:16px;font-weight:600}
+.lib-close{background:none;border:none;color:var(--tx3);font-size:20px;cursor:pointer;padding:4px;line-height:1}
+.lib-close:hover{color:var(--tx1)}
+.lib-list{overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.lib-item{background:var(--s3);border:1px solid var(--b1);border-radius:var(--r2);padding:14px;cursor:pointer;transition:all .15s}
+.lib-item:hover{border-color:var(--b3);background:var(--s4)}
+.lib-item-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.lib-tool{font-size:10px;font-weight:600;color:var(--ind);background:var(--indbg);border:1px solid var(--indln);border-radius:99px;padding:2px 8px;text-transform:uppercase;letter-spacing:0.05em}
+.lib-date{font-size:11px;color:var(--tx3)}
+.lib-preview{font-size:13px;color:var(--tx2);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.lib-del{background:none;border:none;color:var(--tx3);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:var(--r1);margin-left:8px}
+.lib-del:hover{color:var(--red);background:var(--redbg)}
+.lib-empty{color:var(--tx3);text-align:center;padding:40px;font-size:13px}
+
+/* VIEW MODAL */
+.view-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.view-overlay.on{display:flex}
+.view-modal{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r4);width:100%;max-width:760px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.view-top{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--b1)}
+.view-body{overflow-y:auto;padding:24px;flex:1;line-height:1.8;font-size:14px;white-space:pre-wrap;color:var(--tx1)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="logo-mark">✍️</div>
+      <div>
+        <div class="logo-name"><span>Scribiq</span></div>
+        <div class="logo-tag">AI Writing Studio</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <button class="hdr-btn" onclick="openLib()">📚 Library</button>
+      <button class="hdr-btn" onclick="openSettings()">⚙️ Setup</button>
+    </div>
+  </div>
+
+  <div class="nav" id="nav">
+    <button class="nb on" onclick="switchTab('write',this)"><span class="ni">✍️</span>Write</button>
+    <button class="nb" onclick="switchTab('copy',this)"><span class="ni">📢</span>Copy</button>
+    <button class="nb" onclick="switchTab('email',this)"><span class="ni">📧</span>Email</button>
+    <button class="nb" onclick="switchTab('social',this)"><span class="ni">📱</span>Social</button>
+    <button class="nb" onclick="switchTab('script',this)"><span class="ni">🎬</span>Script</button>
+    <button class="nb" onclick="switchTab('screen',this)"><span class="ni">🎥</span>Screen</button>
+    <button class="nb" onclick="switchTab('book',this)"><span class="ni">📖</span>Book</button>
+    <button class="nb" onclick="switchTab('story',this)"><span class="ni">📝</span>Story</button>
+    <button class="nb" onclick="switchTab('edit',this)"><span class="ni">✂️</span>Edit</button>
+    <button class="nb" onclick="switchTab('tools',this)"><span class="ni">⚡</span>Tools</button>
+  </div>
+
+  <div id="pg-write" class="pg on"></div>
+  <div id="pg-copy" class="pg"></div>
+  <div id="pg-email" class="pg"></div>
+  <div id="pg-social" class="pg"></div>
+  <div id="pg-script" class="pg"></div>
+  <div id="pg-screen" class="pg"></div>
+  <div id="pg-book" class="pg"></div>
+  <div id="pg-story" class="pg"></div>
+  <div id="pg-edit" class="pg"></div>
+  <div id="pg-tools" class="pg"></div>
+</div>
+
+<!-- Library Modal -->
+<div class="lib-overlay" id="lib-overlay" onclick="closeLib(event)">
+  <div class="lib-modal">
+    <div class="lib-top">
+      <h2>📚 Saved Library</h2>
+      <button class="lib-close" onclick="closeLib()">✕</button>
+    </div>
+    <div class="lib-list" id="lib-list"></div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="view-overlay" id="view-overlay" onclick="closeView(event)">
+  <div class="view-modal">
+    <div class="view-top">
+      <h2 id="view-title"></h2>
+      <button class="lib-close" onclick="closeView()">✕</button>
+    </div>
+    <div class="view-body" id="view-body"></div>
+  </div>
+</div>
+
+<script>
+
+const TABS=[
+  {id:'write',icon:'✍️',label:'Write'},{id:'copy',icon:'📢',label:'Copy'},
+  {id:'email',icon:'📧',label:'Email'},{id:'social',icon:'📱',label:'Social'},
+  {id:'script',icon:'🎬',label:'Script'},{id:'screen',icon:'🎥',label:'Screen'},
+  {id:'book',icon:'📖',label:'Book'},{id:'story',icon:'📝',label:'Story'},
+  {id:'edit',icon:'✂️',label:'Edit'},{id:'tools',icon:'⚡',label:'Tools'}
+];
+const TOOLS={
+write:[
+  {id:'blog',icon:'📝',label:'Blog Post',desc:'SEO-optimized long-form article',format:'md',
+   inputs:[
+    {id:'topic',label:'Topic / Title',type:'text',placeholder:'e.g. 10 habits of highly productive people',span:true},
+    {id:'tone',label:'Tone',type:'select',options:['Professional','Conversational','Authoritative','Inspiring','Witty']},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'e.g. entrepreneurs, college students'},
+    {id:'words',label:'Word Count',type:'select',options:['500 words','800 words','1200 words','1500 words','2000 words']},
+    {id:'keywords',label:'SEO Keywords (optional)',type:'text',placeholder:'productivity, habits, morning routine',span:true}
+   ],
+   system:'You are an expert content writer and SEO strategist. Write engaging, well-structured blog posts with ## subheadings, short paragraphs, a compelling hook intro, practical body sections, and a strong CTA conclusion.',
+   prompt:v=>`Write a ${v.words||'800 word'} blog post: "${v.topic}"\nTone: ${v.tone||'Professional'}\nAudience: ${v.audience||'general readers'}${v.keywords?'\nSEO keywords: '+v.keywords:''}\n\nUse ## H2 subheadings, bullet points where helpful, hook intro, and conclusion with CTA.`},
+  {id:'howto',icon:'📋',label:'How-To Guide',desc:'Step-by-step instructional guide',format:'md',
+   inputs:[
+    {id:'topic',label:'What to teach',type:'text',placeholder:'e.g. How to build a morning routine',span:true},
+    {id:'steps',label:'Number of Steps',type:'select',options:['5 steps','7 steps','10 steps','15 steps']},
+    {id:'audience',label:'Audience',type:'text',placeholder:'e.g. beginners, working parents'},
+    {id:'tone',label:'Tone',type:'select',options:['Friendly','Professional','Simple','Detailed']}
+   ],
+   system:'You are an expert instructional writer. Write clear, actionable how-to guides with numbered steps, practical tips, and real examples.',
+   prompt:v=>`Write a ${v.steps||'7 step'} how-to guide: "${v.topic}"\nAudience: ${v.audience||'beginners'}\nTone: ${v.tone||'Friendly'}\n\nInclude intro, numbered steps with detail, tips box, and summary.`},
+  {id:'listicle',icon:'🔢',label:'Listicle',desc:'Engaging numbered list article',format:'md',
+   inputs:[
+    {id:'topic',label:'Topic',type:'text',placeholder:'e.g. Best productivity apps for remote workers',span:true},
+    {id:'count',label:'Number of Items',type:'select',options:['5 items','7 items','10 items','15 items','20 items']},
+    {id:'tone',label:'Tone',type:'select',options:['Informative','Entertaining','Opinionated','Practical']},
+    {id:'audience',label:'Audience',type:'text',placeholder:'e.g. freelancers, students'}
+   ],
+   system:'You are an expert content writer specializing in engaging listicles. Each item should have a bold title, 2-3 sentences of value, and a concrete takeaway.',
+   prompt:v=>`Write a "${v.topic}" listicle with ${v.count||'10 items'}.\nTone: ${v.tone||'Informative'}\nAudience: ${v.audience||'general readers'}\n\nFormat: ## numbered items, bold item titles, concise descriptions, compelling intro and outro.`},
+  {id:'opinion',icon:'💭',label:'Opinion Piece',desc:'Persuasive editorial or op-ed',format:'md',
+   inputs:[
+    {id:'topic',label:'Topic / Thesis',type:'text',placeholder:'e.g. Remote work is better than office work',span:true},
+    {id:'stance',label:'Your Stance',type:'text',placeholder:'e.g. strongly in favor because...'},
+    {id:'tone',label:'Tone',type:'select',options:['Passionate','Measured','Provocative','Academic']},
+    {id:'words',label:'Length',type:'select',options:['400 words','600 words','800 words','1000 words']}
+   ],
+   system:'You are a compelling opinion writer. Write persuasive pieces with a clear thesis, strong supporting arguments, acknowledgment of counterarguments, and a memorable conclusion.',
+   prompt:v=>`Write a ${v.words||'600 word'} opinion piece on: "${v.topic}"\nStance: ${v.stance||'in favor'}\nTone: ${v.tone||'Passionate'}\n\nStrong opening hook, clear thesis, 3 supporting arguments, address counterargument, powerful conclusion.`},
+  {id:'casestudy',icon:'📊',label:'Case Study',desc:'Results-driven business case study',format:'md',
+   inputs:[
+    {id:'company',label:'Company / Subject',type:'text',placeholder:'e.g. Shopify, a SaaS startup'},
+    {id:'challenge',label:'The Challenge',type:'text',placeholder:'e.g. Low customer retention'},
+    {id:'solution',label:'The Solution',type:'text',placeholder:'e.g. Implemented loyalty program'},
+    {id:'results',label:'The Results',type:'text',placeholder:'e.g. 40% increase in retention',span:true}
+   ],
+   system:'You are a business writer specializing in case studies. Write compelling, data-driven narratives following: Challenge → Solution → Results → Lessons.',
+   prompt:v=>`Write a case study:\nSubject: ${v.company}\nChallenge: ${v.challenge}\nSolution: ${v.solution}\nResults: ${v.results}\n\nFormat: Executive summary, challenge section, solution section, results with metrics, key takeaways.`},
+  {id:'newsletter',icon:'📰',label:'Newsletter',desc:'Engaging email newsletter issue',format:'md',
+   inputs:[
+    {id:'topic',label:'Main Topic / Theme',type:'text',placeholder:'e.g. The future of AI in design',span:true},
+    {id:'audience',label:'Audience',type:'text',placeholder:'e.g. designers, tech founders'},
+    {id:'tone',label:'Tone',type:'select',options:['Friendly','Insightful','Entertaining','Curated']},
+    {id:'sections',label:'Sections',type:'select',options:['3 sections','4 sections','5 sections']}
+   ],
+   system:'You are an expert newsletter writer. Write engaging issues that readers look forward to: strong subject line, punchy intro, valuable sections, and a memorable sign-off.',
+   prompt:v=>`Write a newsletter issue on: "${v.topic}"\nAudience: ${v.audience||'subscribers'}\nTone: ${v.tone||'Friendly'}\n${v.sections||'3 sections'}\n\nInclude: catchy subject line, personal intro, main sections with insights, CTA, sign-off.`}
+],
+copy:[
+  {id:'aida',icon:'🎯',label:'Sales Page (AIDA)',desc:'High-converting sales page using AIDA framework',format:'md',
+   inputs:[
+    {id:'product',label:'Product / Service',type:'text',placeholder:'e.g. Online fitness coaching program',span:true},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'e.g. busy professionals aged 30-45'},
+    {id:'pain',label:'Main Pain Point',type:'text',placeholder:'e.g. no time to exercise, low energy'},
+    {id:'benefit',label:'Key Benefit / Outcome',type:'text',placeholder:'e.g. lose 20lbs in 90 days'},
+    {id:'offer',label:'Price / Offer',type:'text',placeholder:'e.g. $97/month, free trial'}
+   ],
+   system:'You are a world-class direct response copywriter. Write high-converting sales copy using the AIDA framework. Every line must earn its place. Use power words, social proof prompts, urgency, and a compelling CTA.',
+   prompt:v=>`Write a full AIDA sales page for: ${v.product}\nAudience: ${v.audience}\nPain point: ${v.pain}\nKey benefit: ${v.benefit}\nOffer: ${v.offer||'contact for pricing'}\n\nSections: Attention hook, Interest (problem), Desire (solution/benefits), Action (CTA). Include headline, subheadline, bullet benefits, objection handling, strong CTA.`},
+  {id:'pas',icon:'🔥',label:'Landing Page (PAS)',desc:'Problem-Agitate-Solution landing page',format:'md',
+   inputs:[
+    {id:'product',label:'Product / Service',type:'text',placeholder:'e.g. Project management software',span:true},
+    {id:'problem',label:'Core Problem',type:'text',placeholder:'e.g. teams miss deadlines constantly'},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'e.g. remote team managers'},
+    {id:'solution',label:'Your Solution',type:'text',placeholder:'e.g. AI-powered task automation'}
+   ],
+   system:'You are an expert conversion copywriter. Use the PAS (Problem-Agitate-Solution) framework to write landing page copy that resonates deeply and drives action.',
+   prompt:v=>`Write a PAS landing page for: ${v.product}\nProblem: ${v.problem}\nAudience: ${v.audience}\nSolution: ${v.solution}\n\nInclude: headline, subheadline, problem section (relatable), agitation (consequences), solution reveal, key features, CTA.`},
+  {id:'fbad',icon:'📣',label:'Social Ad Copy',desc:'Facebook / Instagram ad copy',format:'md',
+   inputs:[
+    {id:'product',label:'Product / Service',type:'text',placeholder:'e.g. Meal prep delivery service'},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'e.g. health-conscious moms'},
+    {id:'hook',label:'Hook Angle',type:'select',options:['Pain point','Curiosity','Transformation','Social proof','Offer/discount']},
+    {id:'cta',label:'CTA',type:'text',placeholder:'e.g. Order now, Learn more, Try free'}
+   ],
+   system:'You are a performance marketing copywriter. Write scroll-stopping social ad copy with a powerful hook, concise body, and compelling CTA. Write 3 variations.',
+   prompt:v=>`Write 3 Facebook/Instagram ad copy variations for: ${v.product}\nAudience: ${v.audience}\nHook angle: ${v.hook||'Pain point'}\nCTA: ${v.cta||'Learn more'}\n\nEach variation: Hook line, 2-3 body lines, CTA. Different angles per variation.`},
+  {id:'googlead',icon:'🔍',label:'Google Ad',desc:'Search ad headlines and descriptions',format:'md',
+   inputs:[
+    {id:'product',label:'Product / Service',type:'text',placeholder:'e.g. Tax accounting software',span:true},
+    {id:'keywords',label:'Target Keywords',type:'text',placeholder:'e.g. tax software, accounting tools'},
+    {id:'usp',label:'Unique Selling Point',type:'text',placeholder:'e.g. Save 10 hours per week'},
+    {id:'cta',label:'Call to Action',type:'text',placeholder:'e.g. Try free for 30 days'}
+   ],
+   system:'You are a PPC specialist. Write Google Ads copy with keyword-rich headlines (max 30 chars each), compelling descriptions (max 90 chars), and strong CTAs.',
+   prompt:v=>`Write Google Ads for: ${v.product}\nKeywords: ${v.keywords}\nUSP: ${v.usp}\nCTA: ${v.cta}\n\nProvide: 5 headline options (≤30 chars each), 3 description options (≤90 chars each), note character counts.`},
+  {id:'aboutus',icon:'🏢',label:'About Us Page',desc:'Compelling company about page',format:'md',
+   inputs:[
+    {id:'company',label:'Company Name',type:'text',placeholder:'e.g. Acme Solutions'},
+    {id:'what',label:'What You Do',type:'text',placeholder:'e.g. We build project management tools'},
+    {id:'story',label:'Founding Story / Mission',type:'text',placeholder:'e.g. Founded in 2020 after struggling with...'},
+    {id:'values',label:'Core Values',type:'text',placeholder:'e.g. transparency, simplicity, customer-first',span:true}
+   ],
+   system:'You are a brand copywriter. Write authentic, human About Us pages that build trust, convey personality, and connect emotionally with visitors.',
+   prompt:v=>`Write an About Us page for ${v.company}.\nWhat they do: ${v.what}\nStory/mission: ${v.story}\nValues: ${v.values}\n\nInclude: compelling opening, origin story, mission, values, team culture, closing invitation.`},
+  {id:'tagline',icon:'💫',label:'Taglines & Headlines',desc:'Memorable brand taglines and slogans',format:'md',
+   inputs:[
+    {id:'company',label:'Brand / Product',type:'text',placeholder:'e.g. QuickBooks, a meditation app'},
+    {id:'what',label:'What It Does',type:'text',placeholder:'e.g. helps freelancers manage invoices'},
+    {id:'vibe',label:'Brand Vibe',type:'select',options:['Bold & punchy','Warm & human','Smart & witty','Inspirational','Minimal & clean']},
+    {id:'count',label:'How Many',type:'select',options:['10 options','15 options','20 options']}
+   ],
+   system:'You are an award-winning brand strategist and copywriter. Generate memorable taglines that are short, distinctive, and capture brand essence.',
+   prompt:v=>`Generate ${v.count||'15'} tagline options for: ${v.company}\nWhat it does: ${v.what}\nBrand vibe: ${v.vibe||'Bold & punchy'}\n\nMix styles: benefit-driven, emotion-driven, clever wordplay, aspirational, minimal. Label each style.`}
+],
+
+email:[
+  {id:'cold',icon:'📤',label:'Cold Outreach',desc:'Cold email that gets replies',format:'plain',
+   inputs:[
+    {id:'sender',label:'Your Role',type:'text',placeholder:'e.g. founder of a SaaS startup'},
+    {id:'recipient',label:'Recipient Type',type:'text',placeholder:'e.g. marketing director at e-commerce brands'},
+    {id:'offer',label:'What You Offer',type:'text',placeholder:'e.g. increase email open rates by 40%'},
+    {id:'cta',label:'Call to Action',type:'text',placeholder:'e.g. 15-min call this week?'}
+   ],
+   system:'You are an expert cold email copywriter. Write short, personalized cold emails (under 150 words) with a compelling subject line, relevant opener, clear value prop, and soft CTA. No fluff.',
+   prompt:v=>`Write a cold outreach email:\nFrom: ${v.sender}\nTo: ${v.recipient}\nOffer: ${v.offer}\nCTA: ${v.cta}\n\nFormat: Subject line, then email body. Keep it under 150 words. Sound human, not salesy.`},
+  {id:'followup',icon:'🔄',label:'Follow-Up Email',desc:'Persistent but polite follow-up',format:'plain',
+   inputs:[
+    {id:'context',label:'Original Outreach Context',type:'text',placeholder:'e.g. pitched our SEO services last Tuesday'},
+    {id:'days',label:'Days Since Last Contact',type:'select',options:['3 days','5 days','1 week','2 weeks','1 month']},
+    {id:'angle',label:'New Angle / Value Add',type:'text',placeholder:'e.g. share a relevant case study'},
+    {id:'tone',label:'Tone',type:'select',options:['Friendly','Professional','Casual','Direct']}
+   ],
+   system:'You are an expert at writing follow-up emails that get responses without being pushy. Add new value in each follow-up.',
+   prompt:v=>`Write a follow-up email.\nContext: ${v.context}\nTime since last contact: ${v.days||'1 week'}\nNew angle: ${v.angle||'check in and offer help'}\nTone: ${v.tone||'Friendly'}\n\nSubject line + short body (under 100 words). Reference prior contact, add value, clear CTA.`},
+  {id:'sales',icon:'💰',label:'Sales Email',desc:'Revenue-driving sales email',format:'plain',
+   inputs:[
+    {id:'product',label:'Product / Service',type:'text',placeholder:'e.g. Annual subscription to analytics platform'},
+    {id:'audience',label:'Recipient',type:'text',placeholder:'e.g. existing free-tier users'},
+    {id:'offer',label:'Offer / Incentive',type:'text',placeholder:'e.g. 30% off for next 48 hours'},
+    {id:'urgency',label:'Urgency',type:'select',options:['Time-limited offer','Limited spots','End of month','No urgency']}
+   ],
+   system:'You are a conversion-focused email copywriter. Write sales emails that feel personal, highlight clear value, and drive immediate action.',
+   prompt:v=>`Write a sales email for: ${v.product}\nRecipient: ${v.audience}\nOffer: ${v.offer}\nUrgency: ${v.urgency||'Time-limited offer'}\n\nSubject + body with hook, value, offer, urgency, clear CTA. Under 200 words.`},
+  {id:'welcome',icon:'👋',label:'Welcome Email',desc:'Onboarding welcome email sequence',format:'plain',
+   inputs:[
+    {id:'company',label:'Company / Product',type:'text',placeholder:'e.g. Notion, a fitness app'},
+    {id:'what',label:'What They Signed Up For',type:'text',placeholder:'e.g. free trial of project management tool'},
+    {id:'next',label:'Key Next Step',type:'text',placeholder:'e.g. create your first project'},
+    {id:'tone',label:'Tone',type:'select',options:['Warm & friendly','Professional','Excited','Minimal']}
+   ],
+   system:'You are an onboarding email expert. Write welcome emails that make new users feel excited, set expectations, and guide them to their first win.',
+   prompt:v=>`Write a welcome email for ${v.company}.\nNew user signed up for: ${v.what}\nKey next step: ${v.next}\nTone: ${v.tone||'Warm & friendly'}\n\nSubject line + email: warm welcome, what to expect, one clear next step, support CTA.`},
+  {id:'pitch',icon:'🚀',label:'Pitch Email',desc:'Media, investor, or partnership pitch',format:'plain',
+   inputs:[
+    {id:'pitcher',label:'Who You Are',type:'text',placeholder:'e.g. founder of a climate tech startup'},
+    {id:'recipient',label:'Recipient Type',type:'select',options:['Investor / VC','Journalist / Media','Potential partner','Influencer / Creator']},
+    {id:'ask',label:'The Ask',type:'text',placeholder:'e.g. seed funding of $500k, feature story, partnership'},
+    {id:'hook',label:'Your Unique Hook',type:'text',placeholder:'e.g. grew to 10k users in 30 days with $0 marketing'}
+   ],
+   system:'You are a pitch expert. Write concise, compelling pitch emails that open doors. Subject line must get opened. Body must intrigue, not overwhelm.',
+   prompt:v=>`Write a pitch email.\nFrom: ${v.pitcher}\nTo: ${v.recipient}\nAsk: ${v.ask}\nHook: ${v.hook}\n\nSubject + email: compelling hook, brief context, the ask, why them, next step. Under 180 words.`}
+],
+social:[
+  {id:'thread',icon:'🧵',label:'Twitter/X Thread',desc:'Viral Twitter/X thread',format:'plain',
+   inputs:[
+    {id:'topic',label:'Topic',type:'text',placeholder:'e.g. 10 lessons from building a $1M business',span:true},
+    {id:'angle',label:'Angle',type:'select',options:['Personal story','Tactical tips','Contrarian take','Curated insights','Step-by-step']},
+    {id:'tweets',label:'Thread Length',type:'select',options:['5 tweets','7 tweets','10 tweets','12 tweets','15 tweets']},
+    {id:'tone',label:'Tone',type:'select',options:['Conversational','Authoritative','Storytelling','Punchy']}
+   ],
+   system:'You are a viral Twitter/X content creator. Write threads with an irresistible hook tweet, punchy standalone tweets that drive readers forward, and a strong closing CTA. Number tweets as 1/, 2/, etc.',
+   prompt:v=>`Write a ${v.tweets||'10 tweet'} Twitter/X thread on: "${v.topic}"\nAngle: ${v.angle||'Tactical tips'}\nTone: ${v.tone||'Conversational'}\n\nFormat:\n1/ [hook - make them stop scrolling]\n2/ [tweet]\n...\nLast/ [CTA: follow, share, or reply]`},
+  {id:'linkedin',icon:'💼',label:'LinkedIn Post',desc:'High-engagement LinkedIn post',format:'plain',
+   inputs:[
+    {id:'topic',label:'Topic / Story',type:'text',placeholder:'e.g. I got rejected 50 times before my first yes',span:true},
+    {id:'type',label:'Post Type',type:'select',options:['Personal story','Industry insight','Tactical tips','Announcement','Contrarian opinion']},
+    {id:'cta',label:'Call to Action',type:'text',placeholder:'e.g. What is your experience? Share below'},
+    {id:'tone',label:'Tone',type:'select',options:['Authentic','Professional','Inspirational','Direct']}
+   ],
+   system:'You are a LinkedIn growth expert. Write posts that hook in the first line, deliver real value, and end with a question or CTA that drives comments. Use short paragraphs and line breaks.',
+   prompt:v=>`Write a LinkedIn post about: "${v.topic}"\nType: ${v.type||'Personal story'}\nCTA: ${v.cta||'What do you think? Comment below'}\nTone: ${v.tone||'Authentic'}\n\nHook first line (no "I am excited to announce"). Short paragraphs. Value throughout. CTA at end.`},
+  {id:'instagram',icon:'📸',label:'Instagram Caption',desc:'Engaging Instagram caption with hashtags',format:'plain',
+   inputs:[
+    {id:'topic',label:'What the Post Is About',type:'text',placeholder:'e.g. morning workout routine photo',span:true},
+    {id:'vibe',label:'Vibe',type:'select',options:['Motivational','Behind the scenes','Educational','Humorous','Aesthetic/moody']},
+    {id:'cta',label:'CTA',type:'text',placeholder:'e.g. Save this for tomorrow morning!'},
+    {id:'hashtags',label:'Hashtags',type:'select',options:['5 hashtags','10 hashtags','15 hashtags','20 hashtags','30 hashtags']}
+   ],
+   system:'You are a social media expert. Write Instagram captions that stop the scroll, deliver value or emotion, and include relevant hashtags.',
+   prompt:v=>`Write an Instagram caption for: "${v.topic}"\nVibe: ${v.vibe||'Motivational'}\nCTA: ${v.cta||'Double tap if you agree!'}\nInclude ${v.hashtags||'15 hashtags'} at the end.\n\nHook first line, value body, CTA, then hashtags on new line.`},
+  {id:'tiktok',icon:'🎵',label:'TikTok Hook + Script',desc:'TikTok video hook and script',format:'plain',
+   inputs:[
+    {id:'topic',label:'Video Topic',type:'text',placeholder:'e.g. 3 money habits that changed my life'},
+    {id:'duration',label:'Duration',type:'select',options:['15 seconds','30 seconds','60 seconds','90 seconds']},
+    {id:'style',label:'Style',type:'select',options:['Talking head','List format','Storytime','Tutorial','Trend/sound']},
+    {id:'hook',label:'Hook Angle',type:'select',options:['Controversial opener','Curiosity gap','Bold claim','Personal story','Direct address']}
+   ],
+   system:'You are a viral TikTok creator. Write scripts with pattern-interrupt hooks (first 3 seconds), fast-paced value delivery, and a reason to watch to the end.',
+   prompt:v=>`Write a ${v.duration||'60 second'} TikTok script on: "${v.topic}"\nStyle: ${v.style||'List format'}\nHook type: ${v.hook||'Curiosity gap'}\n\nFormat:\nHOOK (0-3s): [attention-grabbing opener]\nBODY: [fast-paced main content]\nCTA (last 3s): [follow, comment, share]`},
+  {id:'youtube',icon:'▶️',label:'YouTube Description',desc:'SEO-optimized video description',format:'plain',
+   inputs:[
+    {id:'title',label:'Video Title',type:'text',placeholder:'e.g. How I Made $10K in One Month as a Freelancer'},
+    {id:'summary',label:'What the Video Covers',type:'text',placeholder:'e.g. freelance rates, finding clients, tools',span:true},
+    {id:'cta',label:'Primary CTA',type:'text',placeholder:'e.g. Subscribe for weekly tips'},
+    {id:'links',label:'Links to Include (optional)',type:'text',placeholder:'e.g. free guide, course, newsletter'}
+   ],
+   system:'You are a YouTube SEO expert. Write descriptions that rank in search, hook viewers, include timestamps, and drive channel growth.',
+   prompt:v=>`Write a YouTube description for: "${v.title}"\nCovers: ${v.summary}\nCTA: ${v.cta}\nLinks: ${v.links||'none'}\n\nInclude: 2-3 sentence hook with keywords, what viewers will learn, timestamps (placeholder), links, CTA, hashtags.`}
+],
+script:[
+  {id:'youtube_script',icon:'🎥',label:'YouTube Script',desc:'Full YouTube video script',format:'plain',
+   inputs:[
+    {id:'title',label:'Video Title / Topic',type:'text',placeholder:'e.g. 5 Investing Mistakes Beginners Make',span:true},
+    {id:'duration',label:'Video Length',type:'select',options:['3-5 minutes','7-10 minutes','12-15 minutes','20+ minutes']},
+    {id:'style',label:'Style',type:'select',options:['Educational','Storytelling','Documentary','Tutorial','Opinion/Rant']},
+    {id:'cta',label:'End CTA',type:'text',placeholder:'e.g. Subscribe and comment your biggest mistake'}
+   ],
+   system:'You are a professional YouTube scriptwriter. Write scripts with a powerful hook (first 30 seconds), clear structure, engaging delivery cues, and strong retention throughout.',
+   prompt:v=>`Write a ${v.duration||'7-10 minute'} YouTube script: "${v.title}"\nStyle: ${v.style||'Educational'}\nEnd CTA: ${v.cta}\n\nFormat:\n[HOOK - 30 sec]\n[INTRO]\n[MAIN SECTIONS with headers]\n[CTA/OUTRO]\n\nInclude [b-roll cues] and (delivery notes) throughout.`},
+  {id:'podcast',icon:'🎙️',label:'Podcast Script',desc:'Podcast intro, outro, and segments',format:'plain',
+   inputs:[
+    {id:'show',label:'Show Name',type:'text',placeholder:'e.g. The Founder Files'},
+    {id:'episode',label:'Episode Topic',type:'text',placeholder:'e.g. Building a business with no money'},
+    {id:'host',label:'Host Name(s)',type:'text',placeholder:'e.g. Sarah, or Sarah and Mike'},
+    {id:'style',label:'Show Style',type:'select',options:['Solo host','Interview','Co-hosts','Narrative/documentary']}
+   ],
+   system:'You are a podcast producer and scriptwriter. Write compelling podcast scripts with a hook cold open, engaging intro, segmented content, and memorable outro.',
+   prompt:v=>`Write a podcast script for "${v.show}" - Episode: "${v.episode}"\nHost(s): ${v.host}\nStyle: ${v.style||'Solo host'}\n\nInclude: Cold open hook, theme music cue, host intro, episode overview, main content sections, mid-roll break, outro with CTA, sign-off.`},
+  {id:'ad30',icon:'📺',label:'30-Second Ad',desc:'Television or video 30-second commercial',format:'plain',
+   inputs:[
+    {id:'product',label:'Product / Brand',type:'text',placeholder:'e.g. Athletic energy drink'},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'e.g. athletes 18-35'},
+    {id:'emotion',label:'Core Emotion',type:'select',options:['Inspiring','Funny','Heartwarming','Exciting','Surprising']},
+    {id:'cta',label:'End CTA',type:'text',placeholder:'e.g. Find us at stores nationwide'}
+   ],
+   system:'You are a TV commercial scriptwriter. Write 30-second scripts with visual storytelling, emotional resonance, and memorable brand moments. Include scene directions.',
+   prompt:v=>`Write a 30-second commercial script for: ${v.product}\nAudience: ${v.audience}\nEmotion: ${v.emotion||'Inspiring'}\nCTA: ${v.cta}\n\nFormat: Scene-by-scene with [VISUAL], [VO/DIALOGUE], [SFX]. End with logo/tagline moment.`},
+  {id:'explainer',icon:'💡',label:'Explainer Video',desc:'Product or concept explainer script',format:'plain',
+   inputs:[
+    {id:'subject',label:'Product / Concept',type:'text',placeholder:'e.g. How blockchain works, our CRM software'},
+    {id:'audience',label:'Audience',type:'text',placeholder:'e.g. non-technical business owners'},
+    {id:'duration',label:'Duration',type:'select',options:['60 seconds','90 seconds','2 minutes','3 minutes']},
+    {id:'tone',label:'Tone',type:'select',options:['Simple & clear','Engaging & fun','Professional','Storytelling']}
+   ],
+   system:'You are an explainer video scriptwriter. Make complex things simple. Write scripts that explain clearly, use analogies, and drive viewers to take action.',
+   prompt:v=>`Write a ${v.duration||'90 second'} explainer video script for: "${v.subject}"\nAudience: ${v.audience}\nTone: ${v.tone||'Simple & clear'}\n\nStructure: Problem hook, introduce solution, how it works (simple), benefits, CTA. Include [ANIMATION NOTES].`}
+],
+screen:[
+  {id:'logline',icon:'🎯',label:'Movie Logline',desc:'One sentence that sells the film',format:'plain',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Action','Romance','Animation']},
+    {id:'protagonist',label:'Protagonist',type:'text',placeholder:'e.g. A washed-up detective'},
+    {id:'goal',label:'Goal',type:'text',placeholder:'e.g. must solve one last murder case'},
+    {id:'obstacle',label:'Obstacle',type:'text',placeholder:'e.g. before the real killer frames him'},
+    {id:'stakes',label:'Stakes',type:'text',placeholder:'e.g. or his daughter dies'}
+   ],
+   system:'You are a Hollywood development executive. Write loglines that are irresistible to producers: one sentence, present tense, protagonist + goal + obstacle + stakes. Write 5 variations.',
+   prompt:v=>`Write 5 logline variations.\nGenre: ${v.genre}\nProtagonist: ${v.protagonist}\nGoal: ${v.goal}\nObstacle: ${v.obstacle}\nStakes: ${v.stakes}\n\nEach logline: 1 sentence, present tense, punchy. Label each 1-5.`},
+  {id:'scene',icon:'🎬',label:'Write a Scene',desc:'Proper screenplay-formatted scene',format:'screen',
+   inputs:[
+    {id:'location',label:'Location',type:'text',placeholder:'e.g. INT. COFFEE SHOP - Downtown Chicago'},
+    {id:'time',label:'Time',type:'select',options:['DAY','NIGHT','DAWN','DUSK','CONTINUOUS','LATER']},
+    {id:'characters',label:'Characters',type:'text',placeholder:'e.g. MARCUS, 40s; SARAH, 30s'},
+    {id:'action',label:'What Happens',type:'text',placeholder:'e.g. A tense confrontation about money owed',span:true},
+    {id:'genre',label:'Genre/Tone',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Romance','Action']}
+   ],
+   system:'You are a professional screenwriter. Write in STRICT screenplay format: INT./EXT. LOCATION - TIME, action in present tense, CHARACTER NAME in ALL CAPS before dialogue, (parentheticals) in lowercase. Be visual and cinematic.',
+   prompt:v=>`Write a screenplay scene:\nLocation: ${v.location}\nTime: ${v.time||'DAY'}\nCharacters: ${v.characters}\nAction/beat: ${v.action}\nTone: ${v.genre||'Drama'}\n\nUse proper screenplay format throughout.`},
+  {id:'dialogue',icon:'💬',label:'Dialogue Scene',desc:'Character dialogue loaded with subtext',format:'screen',
+   inputs:[
+    {id:'char1',label:'Character 1',type:'text',placeholder:'e.g. ANNA, 30s, ambitious journalist'},
+    {id:'char2',label:'Character 2',type:'text',placeholder:'e.g. VICTOR, 60s, corrupt politician'},
+    {id:'relationship',label:'Relationship',type:'text',placeholder:'e.g. estranged father and daughter'},
+    {id:'subtext',label:'What They Really Mean',type:'text',placeholder:'e.g. she knows he is lying; he knows she knows',span:true},
+    {id:'setting',label:'Setting',type:'text',placeholder:'e.g. fancy restaurant, public, tense'}
+   ],
+   system:'You are a master dialogue writer. Write scenes where characters never say what they mean directly. Every line has subtext. Silences and actions matter. Use proper screenplay format.',
+   prompt:v=>`Write a screenplay dialogue scene.\nChar 1: ${v.char1}\nChar 2: ${v.char2}\nRelationship: ${v.relationship}\nSubtext: ${v.subtext}\nSetting: ${v.setting}\n\nProper screenplay format. Subtext in every exchange.`},
+  {id:'treatment',icon:'📄',label:'Treatment',desc:'One-page story treatment for pitching',format:'md',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'e.g. THE LAST SIGNAL'},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Action','Romance','Animation']},
+    {id:'logline',label:'Logline',type:'text',placeholder:'One sentence summary',span:true},
+    {id:'act1',label:'Act 1 Setup',type:'text',placeholder:'e.g. Detective takes case, discovers conspiracy'},
+    {id:'act2',label:'Act 2 Conflict',type:'text',placeholder:'e.g. Uncovers truth, faces personal demons'},
+    {id:'act3',label:'Act 3 Resolution',type:'text',placeholder:'e.g. Confronts killer, sacrifices himself'}
+   ],
+   system:'You are a professional screenwriter and script consultant. Write compelling one-page treatments that sell the story to producers and development executives.',
+   prompt:v=>`Write a one-page treatment.\nTitle: ${v.title}\nGenre: ${v.genre}\nLogline: ${v.logline}\nAct 1: ${v.act1}\nAct 2: ${v.act2}\nAct 3: ${v.act3}\n\nFormat: Title, logline, synopsis by act, tone/themes, why this story now.`},
+  {id:'tv_pilot',icon:'📺',label:'TV Pilot Outline',desc:'Pilot episode outline for a TV series',format:'md',
+   inputs:[
+    {id:'title',label:'Series Title',type:'text',placeholder:'e.g. THE HOLLOW'},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Comedy','Thriller','Sci-Fi','Fantasy','Crime','Limited Series','Procedural']},
+    {id:'premise',label:'Series Premise',type:'text',placeholder:'e.g. A town wakes up — everyone has lost their memory',span:true},
+    {id:'characters',label:'Main Characters',type:'text',placeholder:'e.g. Sheriff Dana, newcomer Jake, the mayor'}
+   ],
+   system:'You are a TV writer with major network credits. Write compelling pilot outlines with a strong teaser, A/B story lines, character introductions, and a killer end hook that sets up the series.',
+   prompt:v=>`Write a TV pilot outline.\nTitle: ${v.title}\nGenre: ${v.genre}\nPremise: ${v.premise}\nCharacters: ${v.characters}\n\nInclude: cold open/teaser, act-by-act breakdown, character introductions, series-launching end hook.`},
+  {id:'query_film',icon:'✉️',label:'Query Letter',desc:'Query letter to agents and producers',format:'plain',
+   inputs:[
+    {id:'title',label:'Script Title',type:'text',placeholder:'e.g. THE LAST SIGNAL'},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Action','Romance','Animation']},
+    {id:'logline',label:'Logline',type:'text',placeholder:'One sentence',span:true},
+    {id:'synopsis',label:'Brief Synopsis (2-3 sentences)',type:'textarea',rows:3,span:true},
+    {id:'bio',label:'Writer Bio',type:'text',placeholder:'e.g. Short film at Sundance, TV writing fellowship'}
+   ],
+   system:'You are a script consultant who has helped writers land representation. Write query letters that are professional, concise, and get scripts requested.',
+   prompt:v=>`Write a script query letter.\nTitle: ${v.title}\nGenre: ${v.genre}\nLogline: ${v.logline}\nSynopsis: ${v.synopsis}\nBio: ${v.bio}\n\nProfessional format. Under 300 words. Compelling opener, logline, brief synopsis, bio, ask.`},
+  {id:'short_film',icon:'🎞️',label:'Short Film Script',desc:'Complete short film script',format:'screen',
+   inputs:[
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. Two strangers share an umbrella; only one is real',span:true},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Comedy','Thriller','Horror','Romance','Sci-Fi','Surreal']},
+    {id:'tone',label:'Tone',type:'select',options:['Dramatic','Comedic','Heartwarming','Dark','Mysterious']},
+    {id:'length',label:'Target Length',type:'select',options:['5 minutes','8 minutes','10 minutes','15 minutes']}
+   ],
+   system:'You are an award-winning short film writer. Write complete short film scripts with a tight three-act structure. Every scene earns its place. Proper screenplay format throughout.',
+   prompt:v=>`Write a complete short film script.\nPremise: ${v.premise}\nGenre: ${v.genre}\nTone: ${v.tone||'Dramatic'}\nTarget length: ${v.length||'8 minutes'} (~1 page per minute\n\nFull screenplay format. Strong hook, compressed story, resonant ending.`}
+],
+book:[
+  {id:'chapter_outline',icon:'📋',label:'Chapter Outline',desc:'Complete chapter-by-chapter outline',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Non-Fiction','Self-Help','Memoir']},
+    {id:'premise',label:'Story Premise',type:'text',placeholder:'e.g. A woman discovers her late mother was a Soviet spy',span:true},
+    {id:'protagonist',label:'Protagonist',type:'text',placeholder:'e.g. Maya, 35, librarian'},
+    {id:'chapters',label:'Number of Chapters',type:'select',options:['10 chapters','15 chapters','20 chapters','25 chapters','30 chapters']}
+   ],
+   system:'You are a developmental editor and published author. Create detailed chapter outlines with chapter titles, key events, character development beats, and pacing notes.',
+   prompt:v=>`Create a ${v.chapters||'20 chapter'} outline.\nGenre: ${v.genre}\nPremise: ${v.premise}\nProtagonist: ${v.protagonist}\n\nFor each chapter: number, title, key events, character development, chapter-ending hook.`},
+  {id:'chapter_draft',icon:'✍️',label:'Chapter Draft',desc:'Full chapter of your book',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Non-Fiction','Memoir']},
+    {id:'pov',label:'Point of View',type:'select',options:['First person','Third person limited','Third person omniscient']},
+    {id:'setting',label:'Setting',type:'text',placeholder:'e.g. 1940s Paris, a small apartment'},
+    {id:'scene_goal',label:'Scene Goal',type:'text',placeholder:'e.g. Elena discovers the first clue',span:true},
+    {id:'words',label:'Word Count',type:'select',options:['800 words','1200 words','1500 words','2000 words','2500 words']}
+   ],
+   system:'You are a published novelist. Write vivid, compelling chapters with strong scene-setting, deep POV, show-dont-tell, and authentic character voice.',
+   prompt:v=>`Write a ${v.words||'1500 word'} chapter.\nGenre: ${v.genre}\nPOV: ${v.pov||'Third person limited'}\nSetting: ${v.setting}\nScene goal: ${v.scene_goal}\n\nStrong opening, immersive prose, meaningful conflict, chapter-ending hook.`},
+  {id:'book_blurb',icon:'📖',label:'Book Blurb',desc:'Back-cover copy that sells the book',format:'plain',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'e.g. The Glass Daughter'},
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Non-Fiction','Memoir']},
+    {id:'protagonist',label:'Protagonist & Setup',type:'text',placeholder:'e.g. Maya, a disgraced surgeon, arrives in a new town'},
+    {id:'stakes',label:'Stakes / Conflict',type:'text',placeholder:'e.g. discovers her new home holds deadly secrets',span:true},
+    {id:'tone',label:'Tone',type:'select',options:['Dark & suspenseful','Heartwarming','Action-packed','Literary','Witty & fun']}
+   ],
+   system:'You are a book marketing expert. Write back-cover blurbs that make readers buy immediately. Hook, intrigue, stakes — no spoilers. Write one short (100 words) and one long (200 words) version.',
+   prompt:v=>`Write back-cover blurbs for: "${v.title}"\nGenre: ${v.genre}\nProtagonist: ${v.protagonist}\nStakes: ${v.stakes}\nTone: ${v.tone}\n\nVersion 1: ~100 words (for online)\nVersion 2: ~200 words (for back cover)\nNo spoilers. End on a question or cliffhanger.`},
+  {id:'query_novel',icon:'✉️',label:'Query Letter',desc:'Literary agent query letter',format:'plain',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'e.g. The Glass Daughter'},
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Non-Fiction','Memoir']},
+    {id:'word_count',label:'Word Count',type:'text',placeholder:'e.g. 85,000 words'},
+    {id:'comps',label:'Comp Titles',type:'text',placeholder:'e.g. GONE GIRL meets THE SILENT PATIENT'},
+    {id:'conflict',label:'Core Conflict (2 sentences)',type:'textarea',rows:3,span:true}
+   ],
+   system:'You are a literary agent who has read thousands of queries. Write letters that get manuscript requests: compelling hook, tight synopsis, professional bio. Standard query format.',
+   prompt:v=>`Write a literary agent query letter.\nTitle: ${v.title} (${v.genre}, ${v.word_count||'80,000 words'})\nComp titles: ${v.comps}\nConflict: ${v.conflict}\n\nFormat: Hook opening, protagonist + conflict synopsis, brief bio, closing. Under 350 words.`},
+  {id:'synopsis',icon:'📄',label:'Synopsis',desc:'One-page synopsis including the ending',format:'plain',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'Working title'},
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Non-Fiction','Memoir']},
+    {id:'protagonist',label:'Protagonist',type:'text',placeholder:'e.g. Maya, 35, disgraced surgeon'},
+    {id:'act1',label:'Act 1 — Setup & Inciting Incident',type:'text',placeholder:'What happens in first quarter',span:true},
+    {id:'act2',label:'Act 2 — Conflict & Midpoint',type:'text',placeholder:'Rising conflict, twists, darkest moment',span:true},
+    {id:'act3',label:'Act 3 — Climax & Resolution',type:'text',placeholder:'How it ends — INCLUDE THE ENDING',span:true}
+   ],
+   system:'You are a book editor. Write one-page synopses that tell the full story clearly. Include the ending. Present tense, third person.',
+   prompt:v=>`Write a one-page synopsis for: "${v.title}"\nGenre: ${v.genre}\nProtagonist: ${v.protagonist}\nAct 1: ${v.act1}\nAct 2: ${v.act2}\nAct 3: ${v.act3}\n\nPresent tense, third person, ~400-500 words, include resolution.`},
+  {id:'worldbuilding',icon:'🌍',label:'World Building',desc:'Rich world building notes',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Fantasy','Sci-Fi','Historical Fiction','Alternate History','Dystopian','Steampunk']},
+    {id:'world_name',label:'World / Setting Name',type:'text',placeholder:'e.g. The Shattered Kingdoms, Neo-Tokyo 2087'},
+    {id:'aspect',label:'Focus Area',type:'select',options:['Magic system','Technology & science','Political structure','Culture & religion','Geography & map','History & mythology','Economy & class']},
+    {id:'detail',label:'Detail Level',type:'select',options:['Overview','Detailed','Exhaustive']}
+   ],
+   system:'You are a world-building expert and bestselling speculative fiction author. Create internally consistent, richly detailed world-building that serves the story.',
+   prompt:v=>`Create ${v.detail||'Detailed'} world-building for: "${v.world_name}"\nGenre: ${v.genre}\nFocus: ${v.aspect||'Magic system'}\n\nBe specific, internally consistent, and story-relevant. Include implications for characters and plot.`}
+],
+story:[
+  {id:'short_story',icon:'📖',label:'Short Story',desc:'Complete short story',format:'md',
+   inputs:[
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. A lighthouse keeper receives a message from a ship that sank 100 years ago',span:true},
+    {id:'genre',label:'Genre',type:'select',options:['Literary','Horror','Sci-Fi','Fantasy','Romance','Thriller','Mystery','Magical Realism']},
+    {id:'pov',label:'Point of View',type:'select',options:['First person','Third person limited','Second person']},
+    {id:'tone',label:'Tone',type:'select',options:['Dark','Hopeful','Melancholic','Tense','Whimsical','Haunting']},
+    {id:'words',label:'Length',type:'select',options:['500 words','800 words','1200 words','1500 words']}
+   ],
+   system:'You are a master short story writer. Write with immediate hooks, vivid sensory detail, layered characters, meaningful conflict, and resonant endings. Show dont tell. Every word earns its place.',
+   prompt:v=>`Write a ${v.words||'800 word'} short story.\nPremise: ${v.premise}\nGenre: ${v.genre}\nPOV: ${v.pov||'Third person limited'}\nTone: ${v.tone||'Dark'}\n\nIrresistible opening, vivid detail, earned ending.`},
+  {id:'flash',icon:'⚡',label:'Flash Fiction',desc:'Complete story under 500 words',format:'md',
+   inputs:[
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. The last human teaches an AI what love feels like',span:true},
+    {id:'genre',label:'Genre',type:'select',options:['Literary','Horror','Sci-Fi','Fantasy','Romance','Thriller','Magical Realism']},
+    {id:'twist',label:'Twist or Revelation (optional)',type:'text',placeholder:'e.g. the narrator is already dead'},
+    {id:'words',label:'Word Count',type:'select',options:['100 words','200 words','300 words','500 words']}
+   ],
+   system:'You are a flash fiction master. Stories that are complete universes in miniature. Every sentence does double duty. Subvert expectations. Land the ending hard.',
+   prompt:v=>`Write ${v.words||'300 word'} flash fiction.\nPremise: ${v.premise}\nGenre: ${v.genre}${v.twist?'\nTwist: '+v.twist:''}\n\nComplete arc, specific details, resonant ending.`},
+  {id:'story_hook',icon:'🪝',label:'Story Opening',desc:'Three irresistible story openings',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Literary','Horror','Sci-Fi','Fantasy','Romance','Thriller','Mystery','Magical Realism']},
+    {id:'protagonist',label:'Protagonist',type:'text',placeholder:'e.g. Marcus, 50s, war photographer'},
+    {id:'setting',label:'Setting',type:'text',placeholder:'e.g. war-torn city, golden hour'},
+    {id:'tone',label:'Tone',type:'select',options:['Dark','Atmospheric','Tense','Mysterious','Heartwarming','Urgent']},
+    {id:'pov',label:'Point of View',type:'select',options:['First person','Third person limited','Second person']}
+   ],
+   system:'You are a master fiction writer. Write openings that make it impossible to stop reading. Establish voice, world, and tension in the first sentence. Write 3 different options.',
+   prompt:v=>`Write 3 story opening options.\nGenre: ${v.genre}\nProtagonist: ${v.protagonist}\nSetting: ${v.setting}\nTone: ${v.tone||'Dark'}\nPOV: ${v.pov||'Third person limited'}\n\nLabel Option 1/2/3. Each ~150 words. Different approaches: in-action, atmospheric, in-dialogue.`},
+  {id:'setting_desc',icon:'🏔️',label:'Setting Description',desc:'Vivid, immersive place writing',format:'md',
+   inputs:[
+    {id:'location',label:'Location',type:'text',placeholder:'e.g. Abandoned Victorian mansion on a coastal cliff',span:true},
+    {id:'time_period',label:'Time & Season',type:'text',placeholder:'e.g. Present day, stormy November night'},
+    {id:'atmosphere',label:'Atmosphere',type:'select',options:['Eerie & foreboding','Romantic & sensual','Tense & charged','Peaceful & serene','Chaotic & overwhelming','Dreamlike']},
+    {id:'pov',label:'Point of View',type:'select',options:['First person','Third person limited','Omniscient']}
+   ],
+   system:'You are a literary fiction writer known for immersive settings. Write descriptions that establish mood, reveal character, and transport readers. Specific and sensory, never generic.',
+   prompt:v=>`Write an immersive setting description.\nLocation: ${v.location}\nTime/season: ${v.time_period}\nAtmosphere: ${v.atmosphere||'Eerie & foreboding'}\nPOV: ${v.pov||'Third person limited'}\n\nEngage all senses. Ground in specific detail. Let setting reveal character and mood.`},
+  {id:'plot_twist',icon:'🌀',label:'Plot Twist',desc:'Unexpected but earned plot twists',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Thriller','Horror','Mystery','Sci-Fi','Fantasy','Drama','Romance']},
+    {id:'story_summary',label:'Story So Far',type:'textarea',rows:4,placeholder:'Brief summary of your story setup and characters',span:true},
+    {id:'twist_type',label:'Twist Type',type:'select',options:['Identity reveal','Betrayal by ally','Time/reality shift','The MacGuffin is wrong','Perspective flip','Hidden villain']},
+    {id:'count',label:'Options',type:'select',options:['3 twists','5 twists','7 twists']}
+   ],
+   system:'You are a thriller writer known for jaw-dropping twists. Generate twists that recontextualize everything, feel earned in hindsight, and serve the story thematically.',
+   prompt:v=>`Generate ${v.count||'5 twists'} for my ${v.genre} story.\nStory so far: ${v.story_summary}\nTwist type preference: ${v.twist_type}\n\nFor each: describe the twist, how it recontextualizes what came before, and how to plant seeds.`},
+  {id:'character_sketch',icon:'🖼️',label:'Character Sketch',desc:'Vivid character introduction',format:'md',
+   inputs:[
+    {id:'name',label:'Character Name',type:'text',placeholder:'e.g. ANNA'},
+    {id:'archetype',label:'Archetype',type:'select',options:['The Rebel','The Mentor','The Innocent','The Hero','The Shadow','The Trickster','The Lover','The Sage','The Outcast']},
+    {id:'occupation',label:'Occupation / Role',type:'text',placeholder:'e.g. disgraced surgeon turned bartender'},
+    {id:'flaw',label:'Core Flaw or Wound',type:'text',placeholder:'e.g. cannot forgive herself for her son\'s death'},
+    {id:'voice',label:'Voice / Manner of Speaking',type:'text',placeholder:'e.g. short sentences, old-fashioned slang, never looks anyone in the eye'}
+   ],
+   system:'You are a fiction writer who creates unforgettable characters. Write character sketches through specific, telling details. Show who they are through what they do, say, and notice — never through adjectives alone.',
+   prompt:v=>`Write a character sketch for ${v.name}.\nArchetype: ${v.archetype}\nOccupation: ${v.occupation}\nCore flaw/wound: ${v.flaw}\nVoice: ${v.voice}\n\nShow through action and detail. Include a signature mannerism, a telling habit, a glimpse of their wound.`}
+],
+
+screen:[
+  {id:'logline',icon:'🎯',label:'Movie Logline',desc:'One sentence that sells the film',format:'plain',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Action','Romance','Animation']},
+    {id:'protagonist',label:'Protagonist',type:'text',placeholder:'e.g. A washed-up detective'},
+    {id:'goal',label:'Goal',type:'text',placeholder:'e.g. must solve one last case'},
+    {id:'obstacle',label:'Obstacle',type:'text',placeholder:'e.g. the killer is someone they love'},
+    {id:'stakes',label:'Stakes',type:'text',placeholder:'e.g. or an innocent man dies'}
+   ],
+   system:'You are a Hollywood development executive. Write loglines: one sentence, present tense, protagonist + goal + obstacle + stakes. Write 5 variations with different angles.',
+   prompt:v=>`Write 5 logline variations.\nGenre: ${v.genre||'Thriller'}\nProtagonist: ${v.protagonist}\nGoal: ${v.goal}\nObstacle: ${v.obstacle}\nStakes: ${v.stakes}\n\nEach logline: one compelling sentence. Label the angle of each.`},
+  {id:'treatment',icon:'📄',label:'Treatment',desc:'One-page film treatment for pitching',format:'md',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'e.g. The Last Signal'},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Action','Romance']},
+    {id:'logline',label:'Logline',type:'text',placeholder:'One sentence summary',span:true},
+    {id:'act1',label:'Act 1 (Setup)',type:'text',placeholder:'e.g. Detective takes the case'},
+    {id:'act2',label:'Act 2 (Conflict)',type:'text',placeholder:'e.g. Discovers the conspiracy goes deeper'},
+    {id:'act3',label:'Act 3 (Resolution)',type:'text',placeholder:'e.g. Confronts the truth, makes a sacrifice'}
+   ],
+   system:'You are a professional screenwriter. Write compelling one-page treatments that sell the story to producers: title, genre, logline, world, characters, three-act summary, tone, themes.',
+   prompt:v=>`Write a one-page treatment.\nTitle: ${v.title}\nGenre: ${v.genre}\nLogline: ${v.logline}\nAct 1: ${v.act1}\nAct 2: ${v.act2}\nAct 3: ${v.act3}\n\nInclude: title block, logline, world/setting, main characters, three-act breakdown, tone, themes.`},
+  {id:'scene',icon:'🎬',label:'Write a Scene',desc:'Proper screenplay-formatted scene',format:'screen',
+   inputs:[
+    {id:'location',label:'Location',type:'text',placeholder:'e.g. Coffee shop, downtown Chicago'},
+    {id:'time',label:'Time',type:'select',options:['DAY','NIGHT','DAWN','DUSK','CONTINUOUS']},
+    {id:'characters',label:'Characters',type:'text',placeholder:'e.g. MARCUS 40s, SARAH 30s'},
+    {id:'action',label:'What Happens',type:'text',placeholder:'e.g. A tense confrontation about money owed',span:true},
+    {id:'genre',label:'Genre/Tone',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Action','Romance']}
+   ],
+   system:'You are a professional screenwriter. Write in STRICT screenplay format: INT./EXT. LOCATION - TIME in caps, action in present tense, CHARACTER NAME in caps before dialogue, (parentheticals) in lowercase. Be visual and cinematic.',
+   prompt:v=>`Write a screenplay scene.\nLocation: ${v.location}\nTime: ${v.time||'DAY'}\nCharacters: ${v.characters}\nAction: ${v.action}\nGenre: ${v.genre||'Drama'}\n\nProper screenplay format. Visual, cinematic, tight action lines.`},
+  {id:'dialogue',icon:'💬',label:'Dialogue Scene',desc:'Character dialogue with subtext',format:'screen',
+   inputs:[
+    {id:'char1',label:'Character 1',type:'text',placeholder:'e.g. ANNA, 30s, ambitious journalist'},
+    {id:'char2',label:'Character 2',type:'text',placeholder:'e.g. VICTOR, 60s, corrupt politician'},
+    {id:'relationship',label:'Relationship',type:'text',placeholder:'e.g. estranged father and daughter'},
+    {id:'subtext',label:'Subtext',type:'text',placeholder:'e.g. she knows he is lying',span:true},
+    {id:'setting',label:'Setting',type:'text',placeholder:'e.g. fancy restaurant, public'}
+   ],
+   system:'You are a master dialogue writer. Characters never say what they mean directly. Every line has subtext. Silences matter. Format in proper screenplay style.',
+   prompt:v=>`Write a dialogue scene.\nChar 1: ${v.char1}\nChar 2: ${v.char2}\nRelationship: ${v.relationship}\nSubtext: ${v.subtext}\nSetting: ${v.setting}\n\nProper screenplay format. Rich subtext, silences, behavioral cues.`},
+  {id:'tv_pilot',icon:'📺',label:'TV Pilot Outline',desc:'Pilot episode outline for a series',format:'md',
+   inputs:[
+    {id:'title',label:'Series Title',type:'text',placeholder:'e.g. The Vanishing'},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Comedy','Thriller','Sci-Fi','Fantasy','Crime','Limited Series']},
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. A town wakes up and everyone lost their memory',span:true},
+    {id:'characters',label:'Main Characters',type:'text',placeholder:'e.g. Sheriff Dana, newcomer Jake'},
+    {id:'world',label:'World/Setting',type:'text',placeholder:'e.g. small coastal town, 1990s'}
+   ],
+   system:'You are a TV writer with credits on major series. Write pilot outlines with a strong teaser, A/B/C story lines, character intros, and a killer end-of-pilot hook.',
+   prompt:v=>`Write a TV pilot outline.\nTitle: ${v.title}\nGenre: ${v.genre}\nPremise: ${v.premise}\nCharacters: ${v.characters}\nWorld: ${v.world}\n\nInclude: Cold open/teaser, Act 1-5 breakdown, A/B/C stories, character introductions, pilot hook ending, series potential.`},
+  {id:'character_screen',icon:'👤',label:'Character Profile',desc:'Deep screenplay character breakdown',format:'md',
+   inputs:[
+    {id:'name',label:'Character Name',type:'text',placeholder:'e.g. DETECTIVE MARCUS COLE'},
+    {id:'role',label:'Role',type:'select',options:['Protagonist','Antagonist','Supporting','Mentor','Love Interest']},
+    {id:'want',label:'What They Want',type:'text',placeholder:'e.g. solve the case to redeem himself'},
+    {id:'need',label:'What They Need',type:'text',placeholder:'e.g. forgive himself for his past'},
+    {id:'flaw',label:'Fatal Flaw',type:'text',placeholder:'e.g. self-destructive, pushes people away'}
+   ],
+   system:'You are a script development consultant. Create deep, three-dimensional character profiles: backstory, psychology, voice, arc, relationships, how they serve the story.',
+   prompt:v=>`Create a character profile.\nName: ${v.name}\nRole: ${v.role}\nWant: ${v.want}\nNeed: ${v.need}\nFlaw: ${v.flaw}\n\nInclude: physical description, backstory, psychology, speech patterns, key relationships, character arc, casting notes.`},
+  {id:'query_film',icon:'✉️',label:'Query Letter (Film)',desc:'Query letter to agents/producers',format:'plain',
+   inputs:[
+    {id:'title',label:'Script Title',type:'text',placeholder:'e.g. The Last Signal'},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Thriller','Comedy','Horror','Sci-Fi','Action','Romance']},
+    {id:'logline',label:'Logline',type:'text',placeholder:'One sentence summary',span:true},
+    {id:'synopsis',label:'Brief Synopsis (2-3 sentences)',type:'text',placeholder:'Brief story summary'},
+    {id:'bio',label:'Writer Bio',type:'text',placeholder:'e.g. Sundance short film, writing credits'}
+   ],
+   system:'You are a script consultant who helps writers land representation. Write professional query letters that get scripts requested.',
+   prompt:v=>`Write a query letter for a screenplay.\nTitle: ${v.title}\nGenre: ${v.genre}\nLogline: ${v.logline}\nSynopsis: ${v.synopsis}\nWriter bio: ${v.bio||'emerging writer'}\n\nProfessional format: greeting, logline hook, brief synopsis, why this story matters, bio, closing.`},
+  {id:'short_film',icon:'🎞️',label:'Short Film Script',desc:'Complete short film script',format:'screen',
+   inputs:[
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. Two strangers share an umbrella during a storm',span:true},
+    {id:'genre',label:'Genre',type:'select',options:['Drama','Comedy','Thriller','Horror','Sci-Fi','Romance','Surreal']},
+    {id:'tone',label:'Tone',type:'select',options:['Dramatic','Comedic','Thriller','Heartwarming','Surreal']},
+    {id:'length',label:'Length',type:'select',options:['5 minutes','8 minutes','12 minutes','15 minutes']}
+   ],
+   system:'You are an award-winning short film writer. Write complete scripts with clear three-act structure in minimal pages. Every scene earns its place. Proper screenplay format.',
+   prompt:v=>`Write a complete ${v.length||'8 minute'} short film.\nPremise: ${v.premise}\nGenre: ${v.genre||'Drama'}\nTone: ${v.tone||'Dramatic'}\n\nFull screenplay format: FADE IN, scenes with INT/EXT headings, action, dialogue, FADE OUT.`}
+],
+book:[
+  {id:'chapter_outline',icon:'📋',label:'Chapter Outline',desc:'Chapter-by-chapter book outline',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Non-Fiction','Self-Help','Memoir']},
+    {id:'title',label:'Working Title',type:'text',placeholder:'e.g. The Lighthouse Keeper'},
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. A woman discovers her late mother was a spy',span:true},
+    {id:'chapters',label:'Number of Chapters',type:'select',options:['10 chapters','15 chapters','20 chapters','25 chapters','30 chapters']}
+   ],
+   system:'You are a developmental editor and published author. Create detailed chapter outlines with chapter titles, key events, character development beats, and pacing notes.',
+   prompt:v=>`Create a ${v.chapters||'20 chapter'} outline.\nGenre: ${v.genre}\nTitle: ${v.title}\nPremise: ${v.premise}\n\nEach chapter: number, title, 3-5 bullet points of key events/developments, POV if multiple, pacing note.`},
+  {id:'chapter_draft',icon:'✍️',label:'Chapter Draft',desc:'Full chapter of your book',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror']},
+    {id:'pov',label:'POV',type:'select',options:['First person','Third person limited','Third person omniscient']},
+    {id:'setting',label:'Setting',type:'text',placeholder:'e.g. 1940s Paris, a small apartment'},
+    {id:'characters',label:'Characters in Scene',type:'text',placeholder:'e.g. Elena arrives to find her mentor dead'},
+    {id:'scene_goal',label:'Scene/Chapter Goal',type:'text',placeholder:'e.g. Elena discovers the first clue',span:true},
+    {id:'words',label:'Word Count',type:'select',options:['800 words','1200 words','1500 words','2000 words','2500 words']}
+   ],
+   system:'You are a published novelist. Write vivid, compelling chapters with strong scene-setting, deep POV, show-dont-tell, and authentic character voice.',
+   prompt:v=>`Write a ${v.words||'1500 word'} chapter.\nGenre: ${v.genre}\nPOV: ${v.pov||'Third person limited'}\nSetting: ${v.setting}\nCharacters: ${v.characters}\nGoal: ${v.scene_goal}\n\nImmersive prose, vivid sensory detail, character interiority, tension.`},
+  {id:'character_novel',icon:'👤',label:'Character Profile',desc:'Deep novel character development',format:'md',
+   inputs:[
+    {id:'name',label:'Character Name',type:'text',placeholder:'e.g. Elena Vasquez'},
+    {id:'role',label:'Role',type:'select',options:['Protagonist','Antagonist','Supporting','Mentor','Love Interest']},
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery']},
+    {id:'backstory',label:'Key Backstory',type:'text',placeholder:'Key past events shaping them'},
+    {id:'want',label:'What They Want',type:'text',placeholder:'Their conscious goal'},
+    {id:'fear',label:'Deepest Fear / Flaw',type:'text',placeholder:'What holds them back'}
+   ],
+   system:'You are a developmental editor specializing in character. Create rich profiles: psychology, voice, arc, relationships, how they serve the story.',
+   prompt:v=>`Create a character profile.\nName: ${v.name}\nRole: ${v.role}\nGenre: ${v.genre}\nBackstory: ${v.backstory}\nWant: ${v.want}\nFear/Flaw: ${v.fear}\n\nInclude: physical appearance, personality, speech patterns, relationships, internal conflict, arc trajectory.`},
+  {id:'worldbuilding',icon:'🌍',label:'World Building',desc:'Rich world building notes',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Fantasy','Sci-Fi','Historical Fiction','Alternate History','Dystopian']},
+    {id:'world_name',label:'World Name',type:'text',placeholder:'e.g. The Shattered Kingdoms'},
+    {id:'aspect',label:'Aspect to Develop',type:'select',options:['Magic system','Technology & science','Political structure','Culture & society','Geography & map','History & mythology','Economy & trade']},
+    {id:'detail',label:'Detail Level',type:'select',options:['Overview','Detailed','Exhaustive']}
+   ],
+   system:'You are a world-building expert. Create internally consistent, rich details that serve the story without overwhelming.',
+   prompt:v=>`Build the ${v.aspect||'magic system'} for "${v.world_name}".\nGenre: ${v.genre}\nDetail level: ${v.detail||'Detailed'}\n\nCover: core rules, exceptions, limitations, cultural impact, how it affects daily life, story implications.`},
+  {id:'book_blurb',icon:'📖',label:'Book Blurb',desc:'Back-cover book description',format:'plain',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'e.g. The Lighthouse Keeper'},
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Memoir']},
+    {id:'protagonist',label:'Protagonist',type:'text',placeholder:'e.g. Maya, a disgraced surgeon'},
+    {id:'conflict',label:'Inciting Incident + Conflict',type:'text',placeholder:'e.g. discovers a body, her past catches up',span:true},
+    {id:'tone',label:'Tone',type:'select',options:['Dark & suspenseful','Heartwarming','Action-packed','Literary','Witty']}
+   ],
+   system:'You are a book marketing expert. Write blurbs that make readers buy immediately. Hook, intrigue, stakes — no spoilers. Write 2 versions: short (100 words) and long (200 words).',
+   prompt:v=>`Write a book blurb.\nTitle: ${v.title}\nGenre: ${v.genre}\nProtagonist: ${v.protagonist}\nConflict: ${v.conflict}\nTone: ${v.tone||'Dark & suspenseful'}\n\nTwo versions:\n1. SHORT (100 words) for online listings\n2. LONG (200 words) for back cover`},
+  {id:'query_novel',icon:'✉️',label:'Query Letter',desc:'Literary agent query letter',format:'plain',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'e.g. The Lighthouse Keeper'},
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror','Memoir']},
+    {id:'word_count',label:'Word Count',type:'text',placeholder:'e.g. 85,000 words'},
+    {id:'hook',label:'Comp Titles',type:'text',placeholder:'e.g. GONE GIRL meets THE SILENT PATIENT'},
+    {id:'conflict',label:'Core Conflict (1-2 sentences)',type:'text',placeholder:'The main tension of the story',span:true}
+   ],
+   system:'You are a literary agent who has read 10,000 queries. Write letters that get manuscript requests: hook, tight synopsis, professional bio, proper format.',
+   prompt:v=>`Write a query letter.\nTitle: ${v.title}\nGenre: ${v.genre}\nWord count: ${v.word_count}\nComp titles: ${v.hook}\nConflict: ${v.conflict}\n\nStandard format: Dear [Agent Name], hook paragraph, synopsis paragraph, bio paragraph, closing.`},
+  {id:'synopsis',icon:'📄',label:'Book Synopsis',desc:'One-page synopsis for agents',format:'plain',
+   inputs:[
+    {id:'title',label:'Title',type:'text'},
+    {id:'genre',label:'Genre',type:'select',options:['Literary Fiction','Thriller','Romance','Fantasy','Sci-Fi','Mystery','Horror']},
+    {id:'act1',label:'Act 1 (Setup + Inciting Incident)',type:'text',placeholder:'Beginning and catalyst',span:true},
+    {id:'act2',label:'Act 2 (Rising Conflict + Midpoint)',type:'text',placeholder:'Escalation and turning point',span:true},
+    {id:'act3',label:'Act 3 (Climax + Resolution)',type:'text',placeholder:'Include the ending!',span:true}
+   ],
+   system:'You are a book editor. Write one-page synopses: full story, present tense, third person, include the ending. Clear and compelling.',
+   prompt:v=>`Write a one-page synopsis.\nTitle: ${v.title}\nGenre: ${v.genre}\nAct 1: ${v.act1}\nAct 2: ${v.act2}\nAct 3: ${v.act3}\n\nPresent tense, third person, include ending. Under 600 words.`},
+  {id:'book_proposal',icon:'📑',label:'Book Proposal',desc:'Non-fiction book proposal',format:'md',
+   inputs:[
+    {id:'title',label:'Title',type:'text',placeholder:'e.g. The Habit Blueprint'},
+    {id:'premise',label:'Core Idea',type:'text',placeholder:'One sentence: what this book argues',span:true},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'Primary and secondary audiences'},
+    {id:'comps',label:'Competing Books',type:'text',placeholder:'e.g. Atomic Habits, The 4-Hour Workweek'},
+    {id:'platform',label:'Author Platform',type:'text',placeholder:'Your credentials and audience'}
+   ],
+   system:'You are a literary agent. Write book proposals with all sections publishers need: overview, market analysis, competitive analysis, author bio, chapter outline.',
+   prompt:v=>`Write a book proposal.\nTitle: ${v.title}\nPremise: ${v.premise}\nAudience: ${v.audience}\nComp books: ${v.comps}\nAuthor platform: ${v.platform}\n\nSections: Overview, target market, competitive analysis, author bio/platform, marketing plan, chapter-by-chapter outline (10 chapters).`}
+],
+story:[
+  {id:'short_story',icon:'📖',label:'Short Story',desc:'Complete short story',format:'md',
+   inputs:[
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. A lighthouse keeper receives a message from a ship that sank 100 years ago',span:true},
+    {id:'genre',label:'Genre',type:'select',options:['Literary','Horror','Sci-Fi','Fantasy','Romance','Thriller','Mystery','Magical Realism']},
+    {id:'pov',label:'POV',type:'select',options:['First person','Third person limited','Second person']},
+    {id:'tone',label:'Tone',type:'select',options:['Dark','Hopeful','Melancholic','Tense','Whimsical']},
+    {id:'words',label:'Word Count',type:'select',options:['500 words','800 words','1200 words','1500 words']}
+   ],
+   system:'You are a master short story writer. Write with immediate hooks, vivid sensory detail, layered characters, meaningful conflict, and resonant endings. Show dont tell.',
+   prompt:v=>`Write a ${v.words||'1000 word'} short story.\nPremise: ${v.premise}\nGenre: ${v.genre||'Literary'}\nPOV: ${v.pov||'First person'}\nTone: ${v.tone||'Dark'}\n\nStrong opening hook, rising tension, satisfying ending.`},
+  {id:'flash',icon:'⚡',label:'Flash Fiction',desc:'Ultra-short fiction under 500 words',format:'md',
+   inputs:[
+    {id:'premise',label:'Premise',type:'text',placeholder:'e.g. The last human teaches an AI what love means',span:true},
+    {id:'genre',label:'Genre',type:'select',options:['Literary','Horror','Sci-Fi','Fantasy','Romance','Thriller','Magical Realism']},
+    {id:'twist',label:'Twist (optional)',type:'text',placeholder:'Optional revelation or reversal'},
+    {id:'words',label:'Word Count',type:'select',options:['100 words','200 words','300 words','500 words']}
+   ],
+   system:'You are a flash fiction master. Every sentence does double duty. Subvert expectations. Land the ending hard.',
+   prompt:v=>`Write ${v.words||'300 word'} flash fiction.\nPremise: ${v.premise}\nGenre: ${v.genre||'Literary'}${v.twist?'\nTwist: '+v.twist:''}\n\nComplete story in miniature. Every word earns its place.`},
+  {id:'story_hook',icon:'🪝',label:'Story Opening',desc:'Irresistible opening paragraphs',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Literary','Horror','Sci-Fi','Fantasy','Romance','Thriller','Mystery']},
+    {id:'protagonist',label:'Protagonist',type:'text',placeholder:'e.g. MARCUS, 50s, war photographer'},
+    {id:'setting',label:'Setting',type:'text',placeholder:'e.g. war-torn city, golden hour'},
+    {id:'tone',label:'Tone',type:'select',options:['Dark','Atmospheric','Tense','Mysterious','Heartwarming','Urgent']},
+    {id:'pov',label:'POV',type:'select',options:['First person','Third person limited','Second person']}
+   ],
+   system:'You are a master fiction writer. Write openings that make it impossible to stop reading. Establish voice, world, and tension in the first sentence. Write 3 options.',
+   prompt:v=>`Write 3 story opening options.\nGenre: ${v.genre}\nProtagonist: ${v.protagonist}\nSetting: ${v.setting}\nTone: ${v.tone||'Atmospheric'}\nPOV: ${v.pov||'First person'}\n\n3 different approaches: action start, mystery start, character start. 2-3 paragraphs each.`},
+  {id:'plot_twist',icon:'🌀',label:'Plot Twist Generator',desc:'Unexpected but satisfying twists',format:'md',
+   inputs:[
+    {id:'genre',label:'Genre',type:'select',options:['Literary','Horror','Sci-Fi','Fantasy','Thriller','Mystery','Romance']},
+    {id:'story_summary',label:'Story So Far',type:'text',placeholder:'Brief setup of your story',span:true},
+    {id:'twist_type',label:'Twist Type',type:'select',options:['Identity reveal','Betrayal','Time manipulation','Reality shift','Perspective shift','The goal was wrong']},
+    {id:'count',label:'How Many',type:'select',options:['3 twists','5 twists','7 twists']}
+   ],
+   system:'You are known for jaw-dropping plot twists. Generate twists that recontextualize everything and feel earned.',
+   prompt:v=>`Generate ${v.count||'5'} plot twist options.\nGenre: ${v.genre}\nStory so far: ${v.story_summary}\nTwist type: ${v.twist_type||'any'}\n\nEach twist: one sentence concept, then 2-3 sentences explaining how it recontextualizes the story.`},
+  {id:'setting_desc',icon:'🏔️',label:'Setting Description',desc:'Immersive setting description',format:'md',
+   inputs:[
+    {id:'location',label:'Location',type:'text',placeholder:'e.g. Abandoned Victorian mansion on a cliff'},
+    {id:'time_period',label:'Time / Season',type:'text',placeholder:'e.g. Stormy November night, present day'},
+    {id:'atmosphere',label:'Atmosphere',type:'select',options:['Eerie','Romantic','Tense','Peaceful','Chaotic','Dreamlike']},
+    {id:'pov',label:'POV',type:'select',options:['First person','Third person limited','Omniscient']},
+    {id:'senses',label:'Sensory Focus',type:'select',options:['All senses','Visual dominant','Sound & silence','Smell & taste','Touch & temperature']}
+   ],
+   system:'You are a literary fiction writer known for immersive settings. Be specific and sensory, never generic. Settings reveal character and establish mood.',
+   prompt:v=>`Write an immersive setting description.\nLocation: ${v.location}\nTime: ${v.time_period}\nAtmosphere: ${v.atmosphere||'Eerie'}\nPOV: ${v.pov||'Third person limited'}\nSensory focus: ${v.senses||'All senses'}\n\n3-4 paragraphs of vivid, transportive prose.`},
+  {id:'character_sketch',icon:'🖼️',label:'Character Sketch',desc:'Vivid character introduction',format:'md',
+   inputs:[
+    {id:'name',label:'Name',type:'text',placeholder:'e.g. ANNA'},
+    {id:'archetype',label:'Archetype',type:'select',options:['The Rebel','The Mentor','The Innocent','The Hero','The Shadow','The Trickster','The Lover','The Sage']},
+    {id:'occupation',label:'Occupation',type:'text',placeholder:'e.g. disgraced surgeon turned bartender'},
+    {id:'quirk',label:'Defining Quirk',type:'text',placeholder:'e.g. never makes eye contact, always hums'},
+    {id:'voice',label:'Voice / Speech Pattern',type:'text',placeholder:'e.g. short sentences, old-fashioned slang'}
+   ],
+   system:'You are a fiction writer who creates unforgettable characters. Show who they are through what they do, say, and notice. Specific, telling details.',
+   prompt:v=>`Write a character sketch.\nName: ${v.name}\nArchetype: ${v.archetype||'The Rebel'}\nOccupation: ${v.occupation}\nQuirk: ${v.quirk}\nVoice: ${v.voice}\n\nShow the character in a scene: what they look like, how they move, how they speak, what they notice. 3-4 paragraphs.`}
+],
+edit:[
+  {id:'rewrite',icon:'✏️',label:'Rewrite / Paraphrase',desc:'Rewrite text in a new way',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:8,placeholder:'Paste your text here',span:true},
+    {id:'style',label:'Style',type:'select',options:['Same style','More formal','More casual','More concise','More detailed','More creative','Simpler','More powerful']}
+   ],
+   system:'You are a world-class editor. Rewrite the given text as instructed while preserving the core meaning. Output ONLY the rewritten text. No commentary, no preamble.',
+   prompt:v=>`Rewrite the following text in a ${v.style||'Same style'} style:\n\n${v.text}`},
+  {id:'polish',icon:'✨',label:'Improve & Polish',desc:'Make good writing great',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:8,placeholder:'Paste your text here',span:true},
+    {id:'goal',label:'Goal',type:'select',options:['Clarity & flow','Stronger impact','More engaging','Fix awkward phrasing','All of the above']},
+    {id:'level',label:'Edit Level',type:'select',options:['Light touch','Moderate edit','Heavy revision']}
+   ],
+   system:"You are a senior editor at a top publishing house. Improve the writing while preserving the author's voice. Output ONLY the improved text.",
+   prompt:v=>`Improve and polish the following text.\nGoal: ${v.goal||'All of the above'}\nEdit level: ${v.level||'Moderate edit'}\n\n${v.text}`},
+  {id:'tone',icon:'🎭',label:'Change Tone',desc:'Shift the tone of any text',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:7,placeholder:'Paste your text here',span:true},
+    {id:'from_tone',label:'From Tone',type:'select',options:['Formal','Casual','Technical','Emotional','Aggressive','Passive']},
+    {id:'to_tone',label:'To Tone',type:'select',options:['Formal','Casual','Conversational','Professional','Friendly','Urgent','Empathetic','Authoritative','Playful','Minimalist']}
+   ],
+   system:'You are an expert editor. Change the tone as instructed while keeping the meaning intact. Output ONLY the rewritten text.',
+   prompt:v=>`Change the tone of the following text from ${v.from_tone||'Formal'} to ${v.to_tone||'Conversational'}:\n\n${v.text}`},
+  {id:'expand',icon:'📈',label:'Expand Text',desc:'Flesh out short text into full content',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:6,placeholder:'Paste your text here',span:true},
+    {id:'expand_by',label:'Expand By',type:'select',options:['+25%','+50%','Double length','Triple length']},
+    {id:'focus',label:'Focus',type:'select',options:['Add detail & examples','Add emotional depth','Add context & background','Add transitions & flow','Comprehensive expansion']}
+   ],
+   system:'You are a skilled writer. Expand the text as instructed by adding genuine value — examples, detail, depth — not filler. Output ONLY the expanded text.',
+   prompt:v=>`Expand the following text by ${v.expand_by||'+50%'}.\nFocus: ${v.focus||'Comprehensive expansion'}\n\n${v.text}`},
+  {id:'summarize',icon:'📉',label:'Summarize',desc:'Condense long content to key points',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:8,placeholder:'Paste your text here',span:true},
+    {id:'length',label:'Length',type:'select',options:['1 sentence','2-3 sentences','1 paragraph','5 bullet points','Executive summary']},
+    {id:'audience',label:'Audience',type:'select',options:['General','Executive','Technical','Social media']}
+   ],
+   system:'You are an expert at distilling complex content into clear summaries. Capture the essential meaning. Output ONLY the summary.',
+   prompt:v=>`Summarize the following text.\nLength: ${v.length||'1 paragraph'}\nAudience: ${v.audience||'General'}\n\n${v.text}`},
+  {id:'simplify',icon:'🧩',label:'Simplify',desc:'Make complex text easy to understand',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:7,placeholder:'Paste your text here',span:true},
+    {id:'level',label:'Reading Level',type:'select',options:['5th grade reading level','8th grade reading level','High school level','General adult','Non-native speaker']},
+    {id:'preserve',label:'Preserve',type:'select',options:['All key information','Main points only','Essential points only']}
+   ],
+   system:'You are an expert at plain language writing. Simplify without dumbing down or losing accuracy. Short sentences, common words, clear structure. Output ONLY the simplified text.',
+   prompt:v=>`Simplify the following text to a ${v.level||'General adult'} level.\nPreserve: ${v.preserve||'All key information'}\n\n${v.text}`},
+  {id:'formal',icon:'👔',label:'Make Formal',desc:'Professional and formal version',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:7,placeholder:'Paste your text here',span:true},
+    {id:'context',label:'Context',type:'select',options:['Business email','Academic writing','Legal document','Executive communication','Cover letter','Press release']},
+    {id:'region',label:'Region',type:'select',options:['American English','British English','International']}
+   ],
+   system:'You are a business writing expert. Rewrite in formal, professional language appropriate for the context. Output ONLY the formal text.',
+   prompt:v=>`Rewrite the following text in formal language appropriate for: ${v.context||'Business email'}\nRegion: ${v.region||'American English'}\n\n${v.text}`},
+  {id:'casual',icon:'😎',label:'Make Casual',desc:'Relaxed, natural-sounding version',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:7,placeholder:'Paste your text here',span:true},
+    {id:'vibe',label:'Vibe',type:'select',options:['Friendly & warm','Conversational','Gen Z energy','Witty & fun','Chill & minimal']},
+    {id:'medium',label:'Medium',type:'select',options:['General','Social media','Text message','Blog','Email to friend']}
+   ],
+   system:'You are a conversational copywriter. Rewrite in a natural, human voice. No jargon. Sound like a real person. Output ONLY the casual version.',
+   prompt:v=>`Rewrite the following text in a casual ${v.vibe||'Conversational'} tone for: ${v.medium||'General'}\n\n${v.text}`},
+  {id:'punchup',icon:'💥',label:'Punch Up',desc:'Add energy, power, and impact',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:7,placeholder:'Paste your text here',span:true},
+    {id:'style',label:'Style',type:'select',options:['Dynamic & energetic','Urgent & compelling','Dramatic','Bold & provocative','Inspiring']},
+    {id:'focus',label:'Focus',type:'select',options:['Opening hook','Ending','Full text','Headlines only']}
+   ],
+   system:'You are a high-energy copywriter. Add punch, rhythm, and power. Cut weak words. Start strong. End harder. Output ONLY the punched-up text.',
+   prompt:v=>`Punch up the following text with a ${v.style||'Dynamic & energetic'} style.\nFocus on: ${v.focus||'Full text'}\n\n${v.text}`},
+  {id:'grammar',icon:'🔍',label:'Fix Grammar & Style',desc:'Proofread and correct writing',format:'plain',
+   inputs:[
+    {id:'text',label:'Text',type:'textarea',rows:8,placeholder:'Paste your text here',span:true},
+    {id:'style_guide',label:'Style Guide',type:'select',options:['AP Style','Chicago Manual','MLA','General','British English']},
+    {id:'focus',label:'Focus',type:'select',options:['Grammar & spelling only','Grammar + style','Full copyedit']}
+   ],
+   system:'You are a meticulous copy editor. Fix all errors and style issues. Track changes by outputting corrected text. If few errors found, state "Text is clean" then output the corrected version.',
+   prompt:v=>`Fix the grammar and style of the following text.\nStyle guide: ${v.style_guide||'General'}\nFocus: ${v.focus||'Grammar + style'}\n\n${v.text}`}
+],
+tools:[
+  {id:'headlines',icon:'📰',label:'Headline Generator',desc:'Magnetic headlines for any format',format:'md',
+   inputs:[
+    {id:'topic',label:'Topic',type:'text',placeholder:'e.g. morning productivity routines for entrepreneurs',span:true},
+    {id:'type',label:'Type',type:'select',options:['Blog post','Email subject','Ad headline','Social post','YouTube title','News article']},
+    {id:'count',label:'Count',type:'select',options:['10 options','15 options','20 options']},
+    {id:'style',label:'Style',type:'select',options:['Curiosity gap','How-to','Number list','Power words','Question','Controversial','Benefit-driven','Mixed styles']}
+   ],
+   system:'You are a headline master trained on 100 years of copywriting. Write headlines using proven formulas: numbers, power words, curiosity gaps, specific benefits. Number each option and note the formula used.',
+   prompt:v=>`Generate ${v.count||'10 options'} headlines for a ${v.type||'Blog post'} about: "${v.topic}"\nStyle: ${v.style||'Mixed styles'}\n\nNumber each headline and note the formula/technique used.`},
+  {id:'cta',icon:'🎯',label:'CTA Generator',desc:'High-converting calls to action',format:'md',
+   inputs:[
+    {id:'product',label:'Product / Service',type:'text',placeholder:'e.g. email marketing course'},
+    {id:'action',label:'Action',type:'select',options:['Sign up','Buy now','Download','Subscribe','Book a call','Start free trial','Learn more','Get access']},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'e.g. overwhelmed small business owners'},
+    {id:'count',label:'Count',type:'select',options:['10 options','15 options','20 options']}
+   ],
+   system:'You are a conversion optimization expert. Write CTAs that use action verbs, specificity, and psychological triggers (urgency, value, curiosity). Number each option.',
+   prompt:v=>`Generate ${v.count||'10 options'} CTA options for: "${v.product}"\nPrimary action: ${v.action||'Sign up'}\nTarget audience: ${v.audience}\n\nNumber each CTA.`},
+  {id:'brainstorm',icon:'🧠',label:'Brainstorm Ideas',desc:'AI-powered idea generation',format:'md',
+   inputs:[
+    {id:'topic',label:'Topic',type:'text',placeholder:'e.g. content ideas for a fitness brand',span:true},
+    {id:'type',label:'Type',type:'select',options:['Content ideas','Business ideas','Product features','Campaign angles','Problem solutions','Book/podcast topics','Social hooks','Headline angles']},
+    {id:'count',label:'Count',type:'select',options:['15 ideas','20 ideas','25 ideas','30 ideas']},
+    {id:'constraint',label:'Constraints (optional)',type:'text',placeholder:'Optional constraints e.g. budget under $100, for Gen Z'}
+   ],
+   system:'You are a creative strategist. Generate diverse, specific, actionable ideas. Avoid generic suggestions. Push for original angles. Number each idea with a brief explanation.',
+   prompt:v=>`Brainstorm ${v.count||'15 ideas'} of type "${v.type||'Content ideas'}" for: "${v.topic}"\nConstraints: ${v.constraint||'none'}\n\nNumber each idea with a brief explanation.`},
+  {id:'outline',icon:'📋',label:'Content Outline',desc:'Structure before you write',format:'md',
+   inputs:[
+    {id:'topic',label:'Topic',type:'text',placeholder:'e.g. Ultimate guide to remote team management',span:true},
+    {id:'type',label:'Type',type:'select',options:['Blog post','Book','Online course','Video script','Presentation','Podcast episode','Email series']},
+    {id:'depth',label:'Depth',type:'select',options:['High level (sections only)','Standard (sections + subsections)','Detailed (sections + subsections + talking points)']},
+    {id:'audience',label:'Audience',type:'text',placeholder:'e.g. first-time managers'}
+   ],
+   system:'You are a content strategist. Create logical, comprehensive outlines that make the writing process effortless. Include intro hook, main sections, supporting points, and conclusion.',
+   prompt:v=>`Create a ${v.depth||'Standard (sections + subsections)'} outline for a ${v.type||'Blog post'}: "${v.topic}"\nAudience: ${v.audience||'General'}\n\nInclude intro hook, main sections, supporting points, and conclusion.`},
+  {id:'seo',icon:'🔎',label:'SEO Meta Tags',desc:'Title tags, meta descriptions, keywords',format:'md',
+   inputs:[
+    {id:'page_title',label:'Page Title',type:'text',placeholder:'e.g. Our project management software'},
+    {id:'description',label:'Page Description',type:'text',placeholder:'What the page is about',span:true},
+    {id:'primary_kw',label:'Primary Keyword',type:'text',placeholder:'Primary keyword to target'},
+    {id:'secondary_kws',label:'Secondary Keywords',type:'text',placeholder:'3-5 secondary keywords, comma separated'}
+   ],
+   system:'You are an SEO specialist. Write optimized meta tags that rank and get clicked. Title: 55-60 chars. Description: 150-160 chars. Include natural keyword placement.',
+   prompt:v=>`Write SEO meta tags for: "${v.page_title}"\nPage description: ${v.description}\nPrimary keyword: ${v.primary_kw}\nSecondary keywords: ${v.secondary_kws}\n\nProvide: Title tag (55-60 chars), meta description (150-160 chars), and schema markup suggestions.`},
+  {id:'pressrelease',icon:'📡',label:'Press Release',desc:'Professional news press release',format:'md',
+   inputs:[
+    {id:'company',label:'Company Name',type:'text',placeholder:'Company name'},
+    {id:'headline',label:'Headline',type:'text',placeholder:'e.g. XYZ Raises $5M to Transform Project Management',span:true},
+    {id:'type',label:'Type',type:'select',options:['Funding round','Product launch','Partnership','Award','Event','Executive hire','Acquisition']},
+    {id:'key_facts',label:'Key Facts',type:'text',placeholder:'Key details, quotes, statistics',span:true},
+    {id:'boilerplate',label:'Boilerplate',type:'text',placeholder:"Company description for 'About' section"}
+   ],
+   system:"You are a PR professional. Write press releases in AP Style with an inverted pyramid structure: headline, dateline, compelling lede, body with quotes, boilerplate.",
+   prompt:v=>`Write a press release for ${v.company}.\nType: ${v.type||'Product launch'}\nHeadline: ${v.headline}\nKey facts: ${v.key_facts}\nBoilerplate: ${v.boilerplate}\n\nFormat in AP Style with inverted pyramid structure.`},
+  {id:'productdesc',icon:'🛍️',label:'Product Description',desc:'Compelling product copy that sells',format:'md',
+   inputs:[
+    {id:'product',label:'Product',type:'text',placeholder:'Product name and type'},
+    {id:'features',label:'Features',type:'text',placeholder:'Key features and specs',span:true},
+    {id:'audience',label:'Audience',type:'text',placeholder:'Who buys this'},
+    {id:'tone',label:'Tone',type:'select',options:['Premium','Friendly','Technical','Minimal','Exciting','Professional']},
+    {id:'length',label:'Length',type:'select',options:['Short (50 words)','Medium (100 words)','Long (200 words)','Full page']}
+   ],
+   system:'You are a product copywriter. Convert features into benefits. Write descriptions that help customers visualize owning the product. Make them feel they need it.',
+   prompt:v=>`Write a ${v.length||'Medium (100 words)'} product description for: "${v.product}"\nFeatures: ${v.features}\nAudience: ${v.audience}\nTone: ${v.tone||'Friendly'}`},
+  {id:'coverletter',icon:'📄',label:'Cover Letter',desc:'Job application cover letter',format:'plain',
+   inputs:[
+    {id:'your_role',label:'Your Background',type:'text',placeholder:'e.g. Senior UX Designer with 7 years experience'},
+    {id:'company',label:'Company',type:'text',placeholder:'Company you are applying to'},
+    {id:'job_title',label:'Job Title',type:'text',placeholder:'Job title you want'},
+    {id:'skills',label:'Key Skills / Achievements',type:'text',placeholder:'3 key skills/achievements to highlight',span:true},
+    {id:'why',label:'Why This Company',type:'text',placeholder:'Why this company specifically'}
+   ],
+   system:'You are a career coach and professional writer. Write cover letters that get interviews: specific, confident, non-generic, focused on value delivered not duties performed.',
+   prompt:v=>`Write a cover letter for ${v.your_role} applying to ${v.company} for the ${v.job_title} role.\nKey skills/achievements: ${v.skills}\nWhy this company: ${v.why}`},
+  {id:'resume',icon:'📊',label:'Resume Bullet Points',desc:'Achievement-focused resume bullets',format:'md',
+   inputs:[
+    {id:'job_title',label:'Job Title',type:'text',placeholder:'e.g. Marketing Manager'},
+    {id:'company',label:'Company',type:'text',placeholder:'e.g. Shopify'},
+    {id:'responsibility',label:'Responsibility',type:'text',placeholder:'What you did e.g. managed social media'},
+    {id:'achievement',label:'Achievement',type:'text',placeholder:'What you achieved e.g. grew followers'},
+    {id:'metric',label:'Metric',type:'text',placeholder:'Numbers e.g. from 5k to 50k followers, 900% growth'}
+   ],
+   system:'You are a resume writer and career expert. Write achievement-focused bullet points using the formula: Action verb + Task + Result + Metric. Strong verbs, specific metrics, clear impact.',
+   prompt:v=>`Write 5 resume bullet point variations for a ${v.job_title} at ${v.company}.\nResponsibility: ${v.responsibility}\nAchievement: ${v.achievement}\nMetric: ${v.metric}\n\nUse the formula: Action verb + Task + Result + Metric.`},
+  {id:'brandvoice',icon:'🎙️',label:'Brand Voice Guide',desc:"Define your brand's unique voice",format:'md',
+   inputs:[
+    {id:'company',label:'Company / Brand',type:'text',placeholder:'Company/brand name'},
+    {id:'industry',label:'Industry',type:'text',placeholder:'e.g. fintech, wellness, B2B SaaS'},
+    {id:'audience',label:'Target Audience',type:'text',placeholder:'Target audience description'},
+    {id:'personality',label:'Personality',type:'text',placeholder:'3-5 adjectives e.g. bold, approachable, witty'},
+    {id:'avoid',label:'Avoid',type:'text',placeholder:'What to never sound like'}
+   ],
+   system:'You are a brand strategist at a top creative agency. Create comprehensive brand voice guides with tone characteristics, vocabulary choices, writing dos/donts, and examples.',
+   prompt:v=>`Create a full brand voice guide for ${v.company} in the ${v.industry} industry.\nTarget audience: ${v.audience}\nPersonality: ${v.personality}\nNever sound like: ${v.avoid}\n\nInclude: tone characteristics, vocabulary choices, writing dos/donts, and examples.`},
+  {id:'names',icon:'💡',label:'Name Generator',desc:'Brand, product, and character names',format:'md',
+   inputs:[
+    {id:'type',label:'Type',type:'select',options:['Business name','Product name','App name','Brand name','Character name','Book title','Podcast name']},
+    {id:'industry_or_genre',label:'Industry / Genre',type:'text',placeholder:'e.g. fintech startup, fantasy novel, wellness brand'},
+    {id:'vibe',label:'Vibe',type:'select',options:['Bold & memorable','Clever & witty','Simple & clean','Mysterious','Inspirational','Descriptive']},
+    {id:'count',label:'Count',type:'select',options:['15 names','20 names','25 names','30 names']}
+   ],
+   system:'You are a naming expert and brand consultant. Generate names that are distinctive, memorable, and available-feeling. Explain the concept behind each name.',
+   prompt:v=>`Generate ${v.count||'15 names'} ${v.type||'Brand name'} options for a ${v.industry_or_genre} project.\nVibe: ${v.vibe||'Bold & memorable'}\n\nNumber each name and explain the concept behind it.`},
+  {id:'faq',icon:'❓',label:'FAQ Generator',desc:'Common questions and expert answers',format:'md',
+   inputs:[
+    {id:'topic',label:'Topic',type:'text',placeholder:'e.g. our subscription pricing model',span:true},
+    {id:'audience',label:'Audience',type:'select',options:['Customers','Technical users','Investors','General public','Job applicants']},
+    {id:'count',label:'Count',type:'select',options:['5 FAQs','8 FAQs','10 FAQs','15 FAQs']},
+    {id:'format',label:'Format',type:'select',options:['Q&A pairs','Accordion format','Conversational']}
+   ],
+   system:'You are a content strategist. Write FAQs that anticipate real questions, reduce friction, build trust, and naturally incorporate SEO terms. Answers should be concise but complete.',
+   prompt:v=>`Generate ${v.count||'10 FAQs'} about: "${v.topic}"\nAudience: ${v.audience||'Customers'}\nFormat: ${v.format||'Q&A pairs'}`}
+]
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let state = { tab: 'write', tool: null, generating: false, output: '', format: 'md' };
+
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── TAB SWITCHING ────────────────────────────────────────────────────────────
+function switchTab(tabId, btnEl) {
+  document.querySelectorAll('.pg').forEach(p => p.style.display = 'none');
+  const pg = document.getElementById('pg-' + tabId);
+  if (pg) pg.style.display = 'block';
+
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+  if (btnEl) {
+    btnEl.classList.add('active');
+  } else {
+    document.querySelectorAll('.nb').forEach(b => {
+      if (b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + tabId + "'")) {
+        b.classList.add('active');
+      }
+    });
+  }
+
+  state.tab = tabId;
+  renderTab(tabId);
+}
+
+// ─── RENDER TAB ───────────────────────────────────────────────────────────────
+function renderTab(tabId) {
+  const pg = document.getElementById('pg-' + tabId);
+  if (!pg) return;
+  const tools = TOOLS[tabId];
+  if (!tools || !tools.length) return;
+
+  const pillsHtml = `<div class="tools-row">${tools.map(t =>
+    `<button class="tp" data-tool="${t.id}" onclick="selectTool('${tabId}','${t.id}',this)">${t.icon} ${t.label}</button>`
+  ).join('')}</div>`;
+
+  const outCardHtml = `
+<div class="out-wrap" id="out-wrap" style="display:none">
+  <div class="out-hdr">
+    <div class="out-title">Output <span class="out-badge" id="out-badge">Ready</span></div>
+    <div class="out-acts">
+      <button class="iBtn" onclick="copyOutput()">Copy</button>
+      <button class="iBtn" onclick="saveToLib()">Save</button>
+      <button class="iBtn" onclick="clearOutput()">Clear</button>
+    </div>
+  </div>
+  <div class="out-body" id="out-body"><div class="empty-out"><div class="ei">✨</div>Your output will appear here</div></div>
+  <div class="out-foot"><span id="word-count">0 words</span><span id="out-tool-label"></span></div>
+</div>`;
+
+  pg.innerHTML = pillsHtml + '<div id="form-container"></div>' + outCardHtml;
+
+  // Auto-select first tool
+  selectTool(tabId, tools[0].id);
+}
+
+// ─── SELECT TOOL ──────────────────────────────────────────────────────────────
+function selectTool(tabId, toolId, btnEl) {
+  document.querySelectorAll('.tp').forEach(b => b.classList.remove('active'));
+  if (btnEl) {
+    btnEl.classList.add('active');
+  } else {
+    document.querySelectorAll('.tp').forEach(b => {
+      if (b.getAttribute('data-tool') === toolId) b.classList.add('active');
+    });
+  }
+
+  const tools = TOOLS[tabId];
+  const tool = tools.find(t => t.id === toolId);
+  if (!tool) return;
+
+  state.tool = tool;
+  state.format = tool.format || 'md';
+
+  const fc = document.getElementById('form-container');
+  if (fc) fc.innerHTML = renderForm(tool);
+
+  // Clear output
+  const outWrap = document.getElementById('out-wrap');
+  if (outWrap) outWrap.style.display = 'none';
+  const outBody = document.getElementById('out-body');
+  if (outBody) outBody.innerHTML = '<div class="empty-out"><div class="ei">✨</div>Your output will appear here</div>';
+  const outBadge = document.getElementById('out-badge');
+  if (outBadge) outBadge.textContent = 'Ready';
+  state.output = '';
+
+  const outToolLabel = document.getElementById('out-tool-label');
+  if (outToolLabel) outToolLabel.textContent = tool.label;
+}
+
+// ─── RENDER FORM ──────────────────────────────────────────────────────────────
+function renderForm(tool) {
+  const fieldsHtml = tool.inputs.map(inp => {
+    let inputHtml = '';
+    if (inp.type === 'text') {
+      inputHtml = `<input type="text" class="finp" id="inp-${inp.id}" placeholder="${escHtml(inp.placeholder || '')}">`;
+    } else if (inp.type === 'select') {
+      const opts = (inp.options || []).map(o => `<option value="${escHtml(o)}">${escHtml(o)}</option>`).join('');
+      inputHtml = `<select class="fsel" id="inp-${inp.id}">${opts}</select>`;
+    } else if (inp.type === 'textarea') {
+      inputHtml = `<textarea class="ftxt" id="inp-${inp.id}" rows="${inp.rows || 5}" placeholder="${escHtml(inp.placeholder || '')}"></textarea>`;
+    }
+    const spanClass = inp.span === true ? ' span2' : '';
+    return `<div class="field${spanClass}"><label class="flbl">${escHtml(inp.label)}</label>${inputHtml}</div>`;
+  }).join('');
+
+  return `
+<div class="form-wrap">
+  <div class="tool-hdr">
+    <span class="tool-icon">${tool.icon}</span>
+    <div>
+      <div class="tool-name">${escHtml(tool.label)}</div>
+      <div class="tool-desc">${escHtml(tool.desc)}</div>
+    </div>
+  </div>
+  <div class="form-body">
+    <div class="form-grid">
+      ${fieldsHtml}
+    </div>
+    <button class="btn-gen" id="btn-gen" onclick="generate()">
+      Generate <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>`;
+}
+
+// ─── GET FORM VALUES ──────────────────────────────────────────────────────────
+function getFormValues(tool) {
+  const values = {};
+  for (const inp of tool.inputs) {
+    values[inp.id] = document.getElementById('inp-' + inp.id)?.value || '';
+  }
+  return values;
+}
+
+// ─── GENERATE ─────────────────────────────────────────────────────────────────
+async function generate() {
+  if (!state.tool || state.generating) return;
+  const values = getFormValues(state.tool);
+  const firstInput = state.tool.inputs[0];
+  if (!values[firstInput.id]?.trim()) {
+    alert('Please fill in the ' + firstInput.label + ' field.');
+    return;
+  }
+  const userPrompt = state.tool.prompt(values);
+  const system = state.tool.system;
+  const max_tokens = state.tool.max_tokens || 4096;
+
+  state.generating = true;
+  state.output = '';
+
+  document.getElementById('out-wrap').style.display = 'block';
+  document.getElementById('out-body').innerHTML = '<span class="cursor-blink"></span>';
+  document.getElementById('out-badge').textContent = 'Generating...';
+  const btn = document.getElementById('btn-gen');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Generating...';
+
+  try {
+    await streamRequest(
+      [{role:'user', content: userPrompt}],
+      system,
+      max_tokens,
+      (text) => {
+        state.output = text;
+        renderOutput(text);
+      }
+    );
+  } catch(err) {
+    document.getElementById('out-body').innerHTML = `<div class="err-msg">⚠️ ${err.message}</div>`;
+  }
+
+  state.generating = false;
+  document.getElementById('out-badge').textContent = 'Done';
+  btn.disabled = false;
+  btn.innerHTML = 'Regenerate <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  updateWordCount(state.output);
+}
+
+// ─── STREAM REQUEST ───────────────────────────────────────────────────────────
+async function streamRequest(messages, system, max_tokens, onChunk) {
+  const res = await fetch('/api/stream', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({messages, system, max_tokens})
+  });
+  if (!res.ok) throw new Error('API error: ' + res.status);
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '', fullText = '';
+  while (true) {
+    const {done, value} = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, {stream: true});
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      try {
+        const ev = JSON.parse(line.slice(6));
+        if (ev.text) { fullText += ev.text; onChunk(fullText); }
+        if (ev.error) throw new Error(ev.error);
+        if (ev.done) return;
+      } catch(e) { if (e.message !== 'JSON parse') throw e; }
+    }
+  }
+}
+
+// ─── RENDER OUTPUT ────────────────────────────────────────────────────────────
+function renderOutput(text) {
+  const body = document.getElementById('out-body');
+  if (state.format === 'screen' || state.format === 'plain') {
+    body.className = state.format === 'screen' ? 'out-body screen' : 'out-body';
+    body.textContent = text;
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor-blink';
+    if (state.generating) body.appendChild(cursor);
+  } else {
+    body.className = 'out-body';
+    body.innerHTML = renderMarkdown(text) + (state.generating ? '<span class="cursor-blink"></span>' : '');
+  }
+  body.scrollTop = body.scrollHeight;
+}
+
+// ─── RENDER MARKDOWN ──────────────────────────────────────────────────────────
+function renderMarkdown(text) {
+  // Escape HTML first
+  let escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  const lines = escaped.split('\n');
+  let html = '';
+  let inUl = false, inOl = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Horizontal rule
+    if (/^---+$/.test(line.trim())) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      html += '<hr>';
+      continue;
+    }
+
+    // Headings
+    if (line.startsWith('#### ')) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      html += '<h4>' + inlineFormat(line.slice(5)) + '</h4>';
+      continue;
+    }
+    if (line.startsWith('### ')) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      html += '<h3>' + inlineFormat(line.slice(4)) + '</h3>';
+      continue;
+    }
+    if (line.startsWith('## ')) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      html += '<h2>' + inlineFormat(line.slice(3)) + '</h2>';
+      continue;
+    }
+    if (line.startsWith('# ')) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+      html += '<h1>' + inlineFormat(line.slice(2)) + '</h1>';
+      continue;
+    }
+
+    // Unordered list
+    if (/^[\-\*] /.test(line)) {
+      if (inOl) { html += '</ol>'; inOl = false; }
+      if (!inUl) { html += '<ul>'; inUl = true; }
+      html += '<li>' + inlineFormat(line.slice(2)) + '</li>';
+      continue;
+    }
+
+    // Ordered list
+    if (/^\d+\. /.test(line)) {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (!inOl) { html += '<ol>'; inOl = true; }
+      html += '<li>' + inlineFormat(line.replace(/^\d+\. /, '')) + '</li>';
+      continue;
+    }
+
+    // Close any open lists
+    if (inUl) { html += '</ul>'; inUl = false; }
+    if (inOl) { html += '</ol>'; inOl = false; }
+
+    // Blank line = paragraph break
+    if (line.trim() === '') {
+      html += '<br>';
+      continue;
+    }
+
+    html += '<p>' + inlineFormat(line) + '</p>';
+  }
+
+  if (inUl) html += '</ul>';
+  if (inOl) html += '</ol>';
+
+  return html;
+}
+
+function inlineFormat(text) {
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Italic
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  return text;
+}
+
+// ─── WORD COUNT ───────────────────────────────────────────────────────────────
+function updateWordCount(text) {
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const chars = text.length;
+  const el = document.getElementById('word-count');
+  if (el) el.textContent = `${words} words · ${chars} chars`;
+}
+
+// ─── COPY OUTPUT ──────────────────────────────────────────────────────────────
+function copyOutput() {
+  if (!state.output) return;
+  navigator.clipboard.writeText(state.output).then(() => {
+    const btn = document.querySelector('.out-acts .iBtn:nth-child(1)');
+    if (btn) {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 1500);
+    }
+  });
+}
+
+// ─── CLEAR OUTPUT ─────────────────────────────────────────────────────────────
+function clearOutput() {
+  state.output = '';
+  state.generating = false;
+  const outWrap = document.getElementById('out-wrap');
+  if (outWrap) outWrap.style.display = 'none';
+  const outBody = document.getElementById('out-body');
+  if (outBody) outBody.innerHTML = '<div class="empty-out"><div class="ei">✨</div>Your output will appear here</div>';
+  const outBadge = document.getElementById('out-badge');
+  if (outBadge) outBadge.textContent = 'Ready';
+  const wc = document.getElementById('word-count');
+  if (wc) wc.textContent = '0 words';
+}
+
+// ─── SAVE TO LIBRARY ──────────────────────────────────────────────────────────
+function saveToLib() {
+  if (!state.output) return;
+  const lib = JSON.parse(localStorage.getItem('scribiq_library') || '[]');
+  lib.unshift({
+    id: Date.now(),
+    tool: state.tool.label,
+    content: state.output,
+    preview: state.output.slice(0, 200),
+    date: new Date().toLocaleDateString()
+  });
+  if (lib.length > 100) lib.pop();
+  localStorage.setItem('scribiq_library', JSON.stringify(lib));
+  const btn = document.querySelector('.iBtn:nth-child(2)');
+  if (btn) { const orig = btn.textContent; btn.textContent = 'Saved!'; setTimeout(() => btn.textContent = orig, 1500); }
+}
+
+// ─── LIBRARY MODAL ────────────────────────────────────────────────────────────
+function openLib() {
+  const lib = JSON.parse(localStorage.getItem('scribiq_library') || '[]');
+  const list = document.getElementById('lib-list');
+  if (!lib.length) {
+    list.innerHTML = '<div class="lib-empty">No saved items yet. Generate something and click Save.</div>';
+  } else {
+    list.innerHTML = lib.map(item => `
+      <div class="lib-item">
+        <div class="lib-item-top">
+          <span class="lib-tool">${escHtml(item.tool)}</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="lib-date">${escHtml(item.date)}</span>
+            <button class="lib-del" onclick="deleteLib(${item.id}, event)">✕</button>
+          </div>
+        </div>
+        <div class="lib-preview">${escHtml(item.preview)}...</div>
+      </div>
+    `).join('');
+    list.querySelectorAll('.lib-item').forEach((el, i) => {
+      el.addEventListener('click', (e) => { if (!e.target.classList.contains('lib-del')) viewLib(lib[i]); });
+    });
+  }
+  document.getElementById('lib-overlay').classList.add('on');
+}
+
+function closeLib(e) {
+  if (!e || e.target === document.getElementById('lib-overlay')) {
+    document.getElementById('lib-overlay').classList.remove('on');
+  }
+}
+
+function deleteLib(id, e) {
+  e.stopPropagation();
+  let lib = JSON.parse(localStorage.getItem('scribiq_library') || '[]');
+  lib = lib.filter(i => i.id !== id);
+  localStorage.setItem('scribiq_library', JSON.stringify(lib));
+  openLib();
+}
+
+function viewLib(item) {
+  document.getElementById('view-title').textContent = item.tool + ' — ' + item.date;
+  document.getElementById('view-body').textContent = item.content;
+  document.getElementById('view-overlay').classList.add('on');
+}
+
+function closeView(e) {
+  if (!e || e.target === document.getElementById('view-overlay')) {
+    document.getElementById('view-overlay').classList.remove('on');
+  }
+}
+
+// ─── SETTINGS MODAL ───────────────────────────────────────────────────────────
+function openSettings() {
+  alert('Setup:\n\n1. Deploy to Vercel\n2. Add ANTHROPIC_API_KEY or OPENROUTER_API_KEY\n   in Vercel → Settings → Environment Variables\n3. Redeploy\n\nFor local dev: create .env.local with your key\nand run: npx vercel dev');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  switchTab('write');
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate();
+});
+</script>
+</body>
+</html>
